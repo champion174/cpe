@@ -2,7 +2,7 @@
 // 1. CONFIGURATION (ADD YOUR CSV LINK HERE)
 // ==========================================
 // IMPORTANT: Ensure your Google Sheet is "Published to Web" as a CSV.
-const CSV_URL = "YOUR_CSV_LINK_HERE"; 
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRnhDcUEhGc5sh5NaCd0GTE6C9ceWyN-Zbvy8R27FOqkG6oODceGv4Wm3MZrAEzNWc2Jir9YclcPFAY/pub?gid=0&single=true&output=csv"; 
 
 // Global State Variables
 let masterDatabase = [];
@@ -50,16 +50,18 @@ function startDaily5() {
     let today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
     
     // Simple filter to get one of each (expand this based on your exact column names)
-    let organic = masterDatabase.filter(q => q.Category === "Organic");
-    let physical = masterDatabase.filter(q => q.Category === "Physical");
-    let inorganic = masterDatabase.filter(q => q.Category === "Inorganic");
-    let aptitude = masterDatabase.filter(q => q.Category === "Aptitude");
+    let organic = masterDatabase.filter(q => q.Category === "Organic Chemistry");
+    let physical = masterDatabase.filter(q => q.Category === "Physical Chemsitry");
+    let inorganic = masterDatabase.filter(q => q.Category === "Inorganic Chemistry");
+    let analytical = masterDatabase.filter(q => q.Category === "Analytical Chemistry");
+    let aptitude = masterDatabase.filter(q => q.Category === "General Aptitude");
 
     currentQuizData = [
         organic[0] || masterDatabase[0],   // Fallback to random if category is empty
         physical[0] || masterDatabase[1],  
         inorganic[0] || masterDatabase[2],
-        aptitude[0] || masterDatabase[3],
+        analytica[0] || masterDatabase[3]
+        aptitude[0] || masterDatabase[4],
         masterDatabase[Math.floor(Math.random() * masterDatabase.length)] // Wildcard
     ].filter(Boolean); // Remove undefined if database is too small
 
