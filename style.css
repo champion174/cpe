@@ -1,0 +1,82 @@
+:root {
+    --primary: #2563eb;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: var(--surface);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav button, .btn-link, button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 1rem;
+    margin-right: 0.5rem;
+}
+
+nav button:hover, button:hover {
+    background: #1d4ed8;
+}
+
+main {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+}
+
+.option-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: #e2e8f0;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+.option-btn.selected {
+    background: var(--primary);
+    color: white;
+}
+
+#timer-display {
+    font-weight: bold;
+    color: #dc2626;
+    text-align: right;
+}
+
+.quiz-controls {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+}
