@@ -53,15 +53,13 @@ function startDaily5() {
     let organic = masterDatabase.filter(q => q.Category === "Organic Chemistry");
     let physical = masterDatabase.filter(q => q.Category === "Physical Chemsitry");
     let inorganic = masterDatabase.filter(q => q.Category === "Inorganic Chemistry");
-    let analytical = masterDatabase.filter(q => q.Category === "Analytical Chemistry");
     let aptitude = masterDatabase.filter(q => q.Category === "General Aptitude");
 
     currentQuizData = [
         organic[0] || masterDatabase[0],   // Fallback to random if category is empty
         physical[0] || masterDatabase[1],  
         inorganic[0] || masterDatabase[2],
-        analytica[0] || masterDatabase[3]
-        aptitude[0] || masterDatabase[4],
+        aptitude[0] || masterDatabase[3],
         masterDatabase[Math.floor(Math.random() * masterDatabase.length)] // Wildcard
     ].filter(Boolean); // Remove undefined if database is too small
 
