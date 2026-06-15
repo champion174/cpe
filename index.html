@@ -1,66 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chemistry Practice Engine</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-</head>
 <body>
     <header>
-        <h1>Practice Engine</h1>
+        <h1>Chemistry Engine</h1>
         <nav>
-            <button onclick="showView('home')">Daily 5</button>
+            <button onclick="showView('home')">Home</button>
             <button onclick="showView('practice-setup')">Custom Practice</button>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSe7nE8yN01Ehh_i5JsJXZb5vrn4YRhSeoF20w6x55F8NTvf7A/viewform?usp=publish-editor
-" target="_blank" class="btn-link">Add a Question</a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSe7nE8yN01Ehh_i5JsJXZb5vrn4YRhSeoF20w6x55F8NTvf7A/viewform?usp=publish-editor" target="_blank" class="btn-link">+ Add Question</a>
         </nav>
     </header>
 
     <main>
         <section id="loading" class="view active">
-            <h2>Loading Database...</h2>
+            <div style="text-align: center; padding: 3rem;">
+                <h2>Initializing Database...</h2>
+                <p>Fetching the latest crowdsourced questions.</p>
+            </div>
         </section>
 
         <section id="home" class="view">
-            <h2>Today's Challenge</h2>
-            <p>5 randomly selected questions across Organic, Inorganic, Physical, and Aptitude.</p>
-            <button onclick="startDaily5()">Start Daily 5</button>
+            <div class="hero-section">
+                <h2>Welcome to the Engine</h2>
+                <p>Master your concepts with crowdsourced practice problems.</p>
+                
+                <div style="background: #e0f2fe; padding: 2rem; border-radius: 12px; margin-top: 2rem;">
+                    <h3>The Daily 5 Challenge</h3>
+                    <p>Test your knowledge with 5 newly curated questions covering Organic, Inorganic, Physical, and Aptitude.</p>
+                    <button style="font-size: 1.2rem; padding: 0.8rem 2rem; margin-top: 1rem;" onclick="startDaily5()">Start Today's Challenge</button>
+                </div>
+            </div>
         </section>
 
         <section id="practice-setup" class="view">
-            <h2>Setup Practice</h2>
-            <label>Category:</label>
-            <select id="category-filter">
-                <option value="All">All Categories</option>
-                <option value="Organic">Organic Chemistry</option>
-                <option value="Physical">Physical Chemistry</option>
-                <option value="Inorganic">Inorganic Chemistry</option>
-                <option value="Aptitude">Aptitude</option>
-            </select>
-            <button onclick="startCustomPractice()">Start Practice</button>
+            <h2>Setup Custom Practice</h2>
+            <p>Select your focus area and dive in.</p>
+            <div style="margin: 2rem 0;">
+                <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Select Category:</label>
+                <select id="category-filter" style="width: 100%; padding: 0.8rem; border-radius: 8px; font-size: 1rem;">
+                    <option value="All">All Categories Mix</option>
+                    <option value="Organic">Organic Chemistry</option>
+                    <option value="Physical">Physical Chemistry</option>
+                    <option value="Inorganic">Inorganic Chemistry</option>
+                    <option value="Aptitude">Aptitude</option>
+                </select>
+            </div>
+            <button onclick="startCustomPractice()">Start Session</button>
         </section>
 
         <section id="quiz-ui" class="view">
-            <div id="timer-display">Time Left: <span id="time">00:00</span></div>
+            <div id="timer-display">Time: <span id="time">00:00</span></div>
+            <div style="clear: both;"></div>
             <h3 id="question-text"></h3>
             <div id="options-container"></div>
             <div class="quiz-controls">
-                <button onclick="prevQuestion()">Previous</button>
-                <button onclick="nextQuestion()">Next</button>
+                <button onclick="prevQuestion()" style="background: var(--text-muted);">← Previous</button>
+                <button onclick="nextQuestion()" style="background: var(--text-muted);">Next →</button>
                 <button onclick="showReview()">Review & Submit</button>
             </div>
         </section>
 
         <section id="results" class="view">
-            <h2>Quiz Complete</h2>
-            <h3 id="score-display"></h3>
-            <div id="review-container"></div>
-            <button onclick="showView('home')">Back to Home</button>
+            <h2>Session Complete</h2>
+            <h3 id="score-display" style="font-size: 1.5rem; color: var(--primary);"></h3>
+            <div id="review-container" style="margin-top: 2rem;"></div>
+            <button onclick="showView('home')" style="margin-top: 2rem;">Return to Home</button>
         </section>
     </main>
 
     <script src="script.js"></script>
 </body>
-</html>
