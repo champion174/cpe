@@ -184,12 +184,13 @@ function calculateScore() {
         let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
         let explanationText = getCol(qData, 'Explanation');
         
-        // --- NEW: A/B/C/D GRADING SHORTCUT ---
+        // Resolve A/B/C/D to actual text
         let correctAnsText = rawCorrect;
         if (/^[A-D]$/i.test(rawCorrect)) {
             correctAnsText = String(getCol(qData, `Option ${rawCorrect.toUpperCase()}`)).trim();
         }
 
+        // Fuzzy match for overall question grade
         let isCorrect = userAns.toString().trim().toLowerCase() === correctAnsText.toLowerCase();
         if (isCorrect) score++;
 
@@ -204,8 +205,13 @@ function calculateScore() {
             ['A', 'B', 'C', 'D'].forEach(opt => {
                 let optText = getCol(qData, `Option ${opt}`);
                 if (optText) {
-                    let isUserChoice = (userAns === optText);
-                    let isActualCorrect = (correctAnsText === optText);
+                    // THE FIX: Fuzzy match for the option highlights to ignore spaces and casing
+                    let cleanUserChoice = userAns.toString().trim().toLowerCase();
+                    let cleanActualCorrect = correctAnsText.toString().trim().toLowerCase();
+                    let cleanOptText = optText.toString().trim().toLowerCase();
+
+                    let isUserChoice = (cleanUserChoice === cleanOptText);
+                    let isActualCorrect = (cleanActualCorrect === cleanOptText);
                     
                     let bgStyle = 'background: transparent; border: 1px solid #e2e8f0;';
                     let textStyle = 'color: #0f172a;';
@@ -221,9 +227,10 @@ function calculateScore() {
                         icon = ' (Your Answer)';
                     }
 
+                    // Options images can stay slightly smaller to fit the boxes nicely
                     let displayContent = optText;
                     if (optText.startsWith('http') && (optText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
-                        displayContent = `<img src="${optText}" style="max-width: 150px; max-height: 80px; display: block; margin-top: 0.25rem;">`;
+                        displayContent = `<img src="${optText}" style="max-width: 250px; max-height: 150px; display: block; margin-top: 0.25rem;">`;
                     }
 
                     optionsReviewHTML += `
@@ -245,10 +252,19 @@ function calculateScore() {
             ? `<div class="explanation-box" style="margin-top: 1rem; background: #e0f2fe; padding: 1rem; border-radius: 8px; font-size: 0.95rem; border: 1px solid #bae6fd;"><b>Explanation:</b> ${explanationText}</div>` 
             : '';
 
+        // THE FIX: Render question images at full width in the review screen
         let qText = getCol(qData, 'Question Text');
+        let qImage = getCol(qData, 'Image URL');
         let qTextDisplay = qText;
+        
+        // Auto-detect if Question text is an image
         if (qText.startsWith('http') && (qText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
-            qTextDisplay = `<img src="${qText}" style="max-width: 150px; border-radius: 8px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
+            qTextDisplay = `<img src="${qText}" style="max-width: 100%; border-radius: 8px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
+        }
+
+        // Render the dedicated Image column if it exists
+        if (qImage !== '') {
+            qTextDisplay += `<img src="${qImage}" style="max-width: 100%; border-radius: 8px; margin-top: 1rem; display: block; border: 1px solid #e2e8f0;">`;
         }
 
         reviewHTML += `
