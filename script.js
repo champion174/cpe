@@ -10,18 +10,34 @@ let currentQuestionIndex = 0;
 let timerInterval;
 let timeLeftRemaining = 0;
 
+// --- BULLETPROOF DATA FETCHER ---
+// This function ignores spaces, capitals, and weird formatting in your column headers
+function getCol(rowObj, targetName) {
+    if (rowObj[targetName] !== undefined && rowObj[targetName] !== '') return rowObj[targetName];
+    
+    let cleanTarget = targetName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (let key in rowObj) {
+        let cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (cleanKey === cleanTarget) {
+            return rowObj[key];
+        }
+    }
+    return '';
+}
+
 window.onload = () => {
     Papa.parse(CSV_URL, {
         download: true,
         header: true,
         skipEmptyLines: true,
+        transformHeader: function(h) { return h.trim(); }, // Cleans headers instantly
         complete: function(results) {
             masterDatabase = results.data;
-            console.log("Database Loaded successfully.");
+            console.log("Database Loaded:", masterDatabase);
             showView('home'); 
         },
         error: function(err) {
-            document.getElementById('loading').innerHTML = "<h2>Error loading database.</h2>";
+            document.getElementById('loading').innerHTML = "<h2>Error loading database. Check the CSV link.</h2>";
         }
     });
 };
@@ -33,10 +49,10 @@ function showView(viewId) {
 }
 
 function startDaily5() {
-    let organic = masterDatabase.filter(q => q.Category === "Organic");
-    let physical = masterDatabase.filter(q => q.Category === "Physical");
-    let inorganic = masterDatabase.filter(q => q.Category === "Inorganic");
-    let aptitude = masterDatabase.filter(q => q.Category === "Aptitude");
+    let organic = masterDatabase.filter(q => getCol(q, 'Category') === "Organic");
+    let physical = masterDatabase.filter(q => getCol(q, 'Category') === "Physical");
+    let inorganic = masterDatabase.filter(q => getCol(q, 'Category') === "Inorganic");
+    let aptitude = masterDatabase.filter(q => getCol(q, 'Category') === "Aptitude");
 
     currentQuizData = [
         organic[Math.floor(Math.random() * organic.length)] || masterDatabase[0],   
@@ -54,7 +70,7 @@ function startCustomPractice() {
     if (category === "All") {
         currentQuizData = [...masterDatabase].sort(() => 0.5 - Math.random()).slice(0, 10);
     } else {
-        currentQuizData = masterDatabase.filter(q => q.Category === category).slice(0, 10);
+        currentQuizData = masterDatabase.filter(q => getCol(q, 'Category') === category).slice(0, 10);
     }
     startQuizEngine(600); 
 }
@@ -73,10 +89,14 @@ function startQuizEngine(timeInSeconds) {
 
 function renderQuestion() {
     let qData = currentQuizData[currentQuestionIndex];
-    let questionHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${qData['Question Text']}</h3>`;
+    let qText = getCol(qData, 'Question Text');
+    let qImage = getCol(qData, 'Image URL');
+    let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
     
-    if (qData['Image URL'] && qData['Image URL'].trim() !== '') {
-        questionHTML += `<img src="${qData['Image URL']}" alt="Question Image" style="max-width: 100%; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;">`;
+    let questionHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${qText}</h3>`;
+    
+    if (qImage !== '') {
+        questionHTML += `<img src="${qImage}" alt="Question Image" style="max-width: 100%; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;">`;
     }
     
     document.getElementById('question-text').innerHTML = questionHTML;
@@ -84,22 +104,24 @@ function renderQuestion() {
     let container = document.getElementById('options-container');
     let optionsHTML = '';
     
-    // Robust check for FITB: Converts to uppercase and removes spaces
-    let qType = qData['Question Type'] ? String(qData['Question Type']).trim().toUpperCase() : '';
-
+    // Renders the FITB input box if the type matches
     if (qType === 'FITB') {
         let currentAns = userAnswers[currentQuestionIndex] || '';
         optionsHTML = `<input type="text" id="fitb-input" class="fitb-input" placeholder="Type your answer here..." value="${currentAns}" onkeyup="selectFITB(this.value)">`;
     } else {
+        // Renders Multiple Choice buttons
         let options = ['A', 'B', 'C', 'D']; 
         options.forEach(opt => {
-            let optText = qData[`Option ${opt}`];
+            let optText = getCol(qData, `Option ${opt}`);
             if (optText) {
                 let isSelected = userAnswers[currentQuestionIndex] === optText ? 'selected' : '';
                 let displayContent = optText;
-                if (optText.startsWith('http') && (optText.match(/\.(jpeg|jpg|gif|png)$/) != null)) {
+                
+                // Render option as an image if it's a URL
+                if (optText.startsWith('http') && (optText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
                     displayContent = `<img src="${optText}" style="max-width: 200px; max-height: 100px; display: block; margin-top: 0.5rem;">`;
                 }
+                
                 optionsHTML += `<button class="option-btn ${isSelected}" onclick="selectOption('${optText}')">
                                     <b>${opt}.</b> ${displayContent}
                                 </button>`;
@@ -156,9 +178,12 @@ function calculateScore() {
 
     currentQuizData.forEach((qData, index) => {
         let userAns = userAnswers[index] || "Unanswered";
-        let correctAns = qData['Correct Answer'] || ""; 
-        let qType = qData['Question Type'] ? String(qData['Question Type']).trim().toUpperCase() : '';
+        let correctAns = getCol(qData, 'Correct Answer');
+        let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
+        let explanationText = getCol(qData, 'Explanation');
+        let qText = getCol(qData, 'Question Text');
         
+        // Grade it (ignores trailing spaces and capitalization)
         let isCorrect = userAns.toString().trim().toLowerCase() === correctAns.toString().trim().toLowerCase();
         if (isCorrect) score++;
 
@@ -169,10 +194,9 @@ function calculateScore() {
 
         let optionsReviewHTML = '';
 
-        // If it's Multiple Choice, render all options with colors
         if (qType !== 'FITB') {
             ['A', 'B', 'C', 'D'].forEach(opt => {
-                let optText = qData[`Option ${opt}`];
+                let optText = getCol(qData, `Option ${opt}`);
                 if (optText) {
                     let isUserChoice = (userAns === optText);
                     let isActualCorrect = (correctAns === optText);
@@ -191,14 +215,19 @@ function calculateScore() {
                         icon = ' (Your Answer)';
                     }
 
+                    // Handle image rendering in review screen
+                    let displayContent = optText;
+                    if (optText.startsWith('http') && (optText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
+                        displayContent = `<img src="${optText}" style="max-width: 150px; max-height: 80px; display: block; margin-top: 0.25rem;">`;
+                    }
+
                     optionsReviewHTML += `
                         <div style="${bgStyle} ${textStyle} padding: 0.5rem; margin-top: 0.25rem; border-radius: 6px; font-size: 0.95rem;">
-                            ${opt}. ${optText} ${icon}
+                            ${opt}. ${displayContent} ${icon}
                         </div>`;
                 }
             });
         } else {
-            // If it's FITB, just show what they typed vs the correct string
             optionsReviewHTML = `
                 <div style="background: #f8fafc; padding: 0.5rem; border-radius: 6px; margin-top: 0.5rem;">
                     <p style="margin: 0; color: #64748b;">Your Answer: <b>${userAns}</b></p>
@@ -207,16 +236,17 @@ function calculateScore() {
             `;
         }
 
-        let explanation = qData['Explanation'] 
-            ? `<div class="explanation-box" style="margin-top: 1rem;"><b>Explanation:</b> ${qData['Explanation']}</div>` 
+        // Explanation Rendering
+        let explanationBlock = explanationText !== '' 
+            ? `<div class="explanation-box" style="margin-top: 1rem; background: #e0f2fe; padding: 1rem; border-radius: 8px; font-size: 0.95rem; border: 1px solid #bae6fd;"><b>Explanation:</b> ${explanationText}</div>` 
             : '';
 
         reviewHTML += `
-            <div class="result-card ${cardClass}">
-                <p class="result-question">Q${index + 1}: ${qData['Question Text']}</p>
+            <div class="result-card ${cardClass}" style="background: #f8fafc; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; border-left: 6px solid ${isCorrect ? '#22c55e' : '#ef4444'};">
+                <p class="result-question" style="font-weight: 600; font-size: 1.1rem; margin-top: 0;">Q${index + 1}: ${qText}</p>
                 ${statusText}
                 ${optionsReviewHTML}
-                ${explanation}
+                ${explanationBlock}
             </div>
         `;
     });
