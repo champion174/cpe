@@ -84,12 +84,13 @@ main {
     float: right;
 }
 
-#question-text { 
-    font-size: 1.3rem; 
+#question-text h3 { 
+    font-size: 1.25rem; 
     margin-top: 2rem; 
     margin-bottom: 1.5rem; 
-    white-space: pre-wrap; /* This tells the browser to respect your Excel formatting! */
-    line-height: 1.8;      /* Adds a little extra breathing room between lines */
+    white-space: pre-wrap; /* Forces the browser to respect Excel line breaks */
+    line-height: 1.8;      /* Adds breathing room between lines */
+    font-weight: 500;
 }
 
 .option-btn {
