@@ -84,7 +84,13 @@ main {
     float: right;
 }
 
-#question-text { font-size: 1.3rem; margin-top: 2rem; margin-bottom: 1.5rem; }
+#question-text { 
+    font-size: 1.3rem; 
+    margin-top: 2rem; 
+    margin-bottom: 1.5rem; 
+    white-space: pre-wrap; /* This tells the browser to respect your Excel formatting! */
+    line-height: 1.8;      /* Adds a little extra breathing room between lines */
+}
 
 .option-btn {
     display: block;
@@ -131,7 +137,12 @@ main {
 .result-card.correct { border-left-color: var(--success); }
 .result-card.incorrect { border-left-color: var(--danger); }
 
-.result-question { font-weight: 600; font-size: 1.1rem; margin-top: 0; }
+.result-question { 
+    font-weight: 600; 
+    font-size: 1.1rem; 
+    margin-top: 0; 
+    white-space: pre-wrap; /* Ensures the review screen is also readable */
+}
 .result-status { margin: 0.5rem 0; font-weight: 500; }
 .status-correct { color: var(--success); }
 .status-incorrect { color: var(--danger); }
