@@ -46,30 +46,53 @@ function showView(viewId) {
     clearInterval(timerInterval); 
 }
 
+// --- NEW HELPER: Shuffles an array randomly ---
+function shuffleArray(array) {
+    let shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 function startDaily5() {
-    let organic = masterDatabase.filter(q => getCol(q, 'Category') === "Organic");
-    let physical = masterDatabase.filter(q => getCol(q, 'Category') === "Physical");
-    let inorganic = masterDatabase.filter(q => getCol(q, 'Category') === "Inorganic");
-    let aptitude = masterDatabase.filter(q => getCol(q, 'Category') === "Aptitude");
+    // 1. Filter out completely blank rows
+    let validDB = masterDatabase.filter(q => getCol(q, 'Question Text').trim() !== '' || getCol(q, 'Image URL').trim() !== '');
 
-    currentQuizData = [
-        organic[Math.floor(Math.random() * organic.length)] || masterDatabase[0],   
-        physical[Math.floor(Math.random() * physical.length)] || masterDatabase[1],  
-        inorganic[Math.floor(Math.random() * inorganic.length)] || masterDatabase[2],
-        aptitude[Math.floor(Math.random() * aptitude.length)] || masterDatabase[3],
-        masterDatabase[Math.floor(Math.random() * masterDatabase.length)] 
-    ].filter(Boolean);
+    let organic = validDB.filter(q => getCol(q, 'Category') === "Organic");
+    let physical = validDB.filter(q => getCol(q, 'Category') === "Physical");
+    let inorganic = validDB.filter(q => getCol(q, 'Category') === "Inorganic");
+    let aptitude = validDB.filter(q => getCol(q, 'Category') === "Aptitude");
 
+    let selectedQuestions = [];
+
+    // 2. Safely grab one random question from each category (if available)
+    if (organic.length > 0) selectedQuestions.push(shuffleArray(organic)[0]);
+    if (physical.length > 0) selectedQuestions.push(shuffleArray(physical)[0]);
+    if (inorganic.length > 0) selectedQuestions.push(shuffleArray(inorganic)[0]);
+    if (aptitude.length > 0) selectedQuestions.push(shuffleArray(aptitude)[0]);
+
+    // 3. Fill the remaining slots up to 5 with UNIQUE wildcards
+    let remainingPool = shuffleArray(validDB.filter(q => !selectedQuestions.includes(q)));
+    
+    while (selectedQuestions.length < 5 && remainingPool.length > 0) {
+        selectedQuestions.push(remainingPool.pop());
+    }
+
+    // 4. Shuffle the final 5 so Categories don't always appear in the same order
+    currentQuizData = shuffleArray(selectedQuestions);
     startQuizEngine(300); 
 }
 
 function startCustomPractice() {
+    let validDB = masterDatabase.filter(q => getCol(q, 'Question Text').trim() !== '' || getCol(q, 'Image URL').trim() !== '');
     let category = document.getElementById('category-filter').value;
-    if (category === "All") {
-        currentQuizData = [...masterDatabase].sort(() => 0.5 - Math.random()).slice(0, 10);
-    } else {
-        currentQuizData = masterDatabase.filter(q => getCol(q, 'Category') === category).slice(0, 10);
-    }
+    
+    let pool = (category === "All") ? validDB : validDB.filter(q => getCol(q, 'Category') === category);
+
+    // Shuffle the pool and take the first 10 strictly unique questions
+    currentQuizData = shuffleArray(pool).slice(0, 10);
     startQuizEngine(600); 
 }
 
