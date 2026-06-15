@@ -11,10 +11,8 @@ let timerInterval;
 let timeLeftRemaining = 0;
 
 // --- BULLETPROOF DATA FETCHER ---
-// This function ignores spaces, capitals, and weird formatting in your column headers
 function getCol(rowObj, targetName) {
     if (rowObj[targetName] !== undefined && rowObj[targetName] !== '') return rowObj[targetName];
-    
     let cleanTarget = targetName.toLowerCase().replace(/[^a-z0-9]/g, '');
     for (let key in rowObj) {
         let cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -30,10 +28,10 @@ window.onload = () => {
         download: true,
         header: true,
         skipEmptyLines: true,
-        transformHeader: function(h) { return h.trim(); }, // Cleans headers instantly
+        transformHeader: function(h) { return h.trim(); }, 
         complete: function(results) {
             masterDatabase = results.data;
-            console.log("Database Loaded:", masterDatabase);
+            console.log("Database Loaded.");
             showView('home'); 
         },
         error: function(err) {
@@ -93,10 +91,17 @@ function renderQuestion() {
     let qImage = getCol(qData, 'Image URL');
     let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
     
-    let questionHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${qText}</h3>`;
+    // Auto-detect if the Question Text is actually an image URL
+    let qTextDisplay = qText;
+    if (qText.startsWith('http') && (qText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
+        qTextDisplay = `<img src="${qText}" style="max-width: 100%; border-radius: 8px; border: 1px solid #e2e8f0;">`;
+    }
+
+    let questionHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${qTextDisplay}</h3>`;
     
+    // Support for dedicated Image URL column
     if (qImage !== '') {
-        questionHTML += `<img src="${qImage}" alt="Question Image" style="max-width: 100%; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;">`;
+        questionHTML += `<img src="${qImage}" style="max-width: 100%; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;">`;
     }
     
     document.getElementById('question-text').innerHTML = questionHTML;
@@ -104,12 +109,10 @@ function renderQuestion() {
     let container = document.getElementById('options-container');
     let optionsHTML = '';
     
-    // Renders the FITB input box if the type matches
     if (qType === 'FITB') {
         let currentAns = userAnswers[currentQuestionIndex] || '';
         optionsHTML = `<input type="text" id="fitb-input" class="fitb-input" placeholder="Type your answer here..." value="${currentAns}" onkeyup="selectFITB(this.value)">`;
     } else {
-        // Renders Multiple Choice buttons
         let options = ['A', 'B', 'C', 'D']; 
         options.forEach(opt => {
             let optText = getCol(qData, `Option ${opt}`);
@@ -117,7 +120,6 @@ function renderQuestion() {
                 let isSelected = userAnswers[currentQuestionIndex] === optText ? 'selected' : '';
                 let displayContent = optText;
                 
-                // Render option as an image if it's a URL
                 if (optText.startsWith('http') && (optText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
                     displayContent = `<img src="${optText}" style="max-width: 200px; max-height: 100px; display: block; margin-top: 0.5rem;">`;
                 }
@@ -178,13 +180,17 @@ function calculateScore() {
 
     currentQuizData.forEach((qData, index) => {
         let userAns = userAnswers[index] || "Unanswered";
-        let correctAns = getCol(qData, 'Correct Answer');
+        let rawCorrect = String(getCol(qData, 'Correct Answer')).trim();
         let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
         let explanationText = getCol(qData, 'Explanation');
-        let qText = getCol(qData, 'Question Text');
         
-        // Grade it (ignores trailing spaces and capitalization)
-        let isCorrect = userAns.toString().trim().toLowerCase() === correctAns.toString().trim().toLowerCase();
+        // --- NEW: A/B/C/D GRADING SHORTCUT ---
+        let correctAnsText = rawCorrect;
+        if (/^[A-D]$/i.test(rawCorrect)) {
+            correctAnsText = String(getCol(qData, `Option ${rawCorrect.toUpperCase()}`)).trim();
+        }
+
+        let isCorrect = userAns.toString().trim().toLowerCase() === correctAnsText.toLowerCase();
         if (isCorrect) score++;
 
         let cardClass = isCorrect ? 'correct' : 'incorrect';
@@ -199,7 +205,7 @@ function calculateScore() {
                 let optText = getCol(qData, `Option ${opt}`);
                 if (optText) {
                     let isUserChoice = (userAns === optText);
-                    let isActualCorrect = (correctAns === optText);
+                    let isActualCorrect = (correctAnsText === optText);
                     
                     let bgStyle = 'background: transparent; border: 1px solid #e2e8f0;';
                     let textStyle = 'color: #0f172a;';
@@ -215,7 +221,6 @@ function calculateScore() {
                         icon = ' (Your Answer)';
                     }
 
-                    // Handle image rendering in review screen
                     let displayContent = optText;
                     if (optText.startsWith('http') && (optText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
                         displayContent = `<img src="${optText}" style="max-width: 150px; max-height: 80px; display: block; margin-top: 0.25rem;">`;
@@ -231,19 +236,24 @@ function calculateScore() {
             optionsReviewHTML = `
                 <div style="background: #f8fafc; padding: 0.5rem; border-radius: 6px; margin-top: 0.5rem;">
                     <p style="margin: 0; color: #64748b;">Your Answer: <b>${userAns}</b></p>
-                    <p style="margin: 0.25rem 0 0 0; color: #15803d;">Correct Answer: <b>${correctAns}</b></p>
+                    <p style="margin: 0.25rem 0 0 0; color: #15803d;">Correct Answer: <b>${correctAnsText}</b></p>
                 </div>
             `;
         }
 
-        // Explanation Rendering
         let explanationBlock = explanationText !== '' 
             ? `<div class="explanation-box" style="margin-top: 1rem; background: #e0f2fe; padding: 1rem; border-radius: 8px; font-size: 0.95rem; border: 1px solid #bae6fd;"><b>Explanation:</b> ${explanationText}</div>` 
             : '';
 
+        let qText = getCol(qData, 'Question Text');
+        let qTextDisplay = qText;
+        if (qText.startsWith('http') && (qText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
+            qTextDisplay = `<img src="${qText}" style="max-width: 150px; border-radius: 8px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
+        }
+
         reviewHTML += `
             <div class="result-card ${cardClass}" style="background: #f8fafc; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; border-left: 6px solid ${isCorrect ? '#22c55e' : '#ef4444'};">
-                <p class="result-question" style="font-weight: 600; font-size: 1.1rem; margin-top: 0;">Q${index + 1}: ${qText}</p>
+                <p class="result-question" style="font-weight: 600; font-size: 1.1rem; margin-top: 0;">Q${index + 1}: ${qTextDisplay}</p>
                 ${statusText}
                 ${optionsReviewHTML}
                 ${explanationBlock}
