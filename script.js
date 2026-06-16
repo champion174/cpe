@@ -1,102 +1,52 @@
 // ==========================================
 // CONFIGURATION
 // ==========================================
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRnhDcUEhGc5sh5NaCd0GTE6C9ceWyN-Zbvy8R27FOqkG6oODceGv4Wm3MZrAEzNWc2Jir9YclcPFAY/pub?gid=0&single=true&output=csv"; 
+// Replace with your new Apps Script Web App URL
+const API_URL = "https://script.google.com/macros/s/AKfycbwr6m2MO7X1XO2Z-mBkwxA1CqiyMTzyMCUrea99D6cVbobOT54_OW6s2NAY0njqH08V/exec"; 
 
-// Paste your pre-filled Google Form links here. 
-// Keep the REPLACE_ID and REPLACE_RATING text exactly as is.
-const ERROR_REPORT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSdVnD1ow5Vbln84CEl-HOLROE1HhJQD37uO9pwHKWyN2umSnQ/viewform?usp=pp_url&entry.309048385=REPLACE_ID";
+const ERROR_REPORT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSdVnD1ow5Vbln84CEl-HOLROE1HhJQD37uO9pwHKWyN2umSnQ/viewform?usp=pp_url&entry.309048385=REPLACE_ID"; 
 const RATING_SUBMIT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSclZsoWAwAYuVi4CTZYcXQvTVLA9FlBarA2QtH3QzufHDJBmQ/viewform?usp=pp_url&entry.217150825=REPLACE_ID&entry.624495279=REPLACE_RATING";
 
-let masterDatabase = [];
 let currentQuizData = [];
 let userAnswers = {}; 
 let currentQuestionIndex = 0;
 let timerInterval;
 let timeLeftRemaining = 0;
 
-// --- CORE HELPERS ---
-function getCol(rowObj, targetName) {
-    if (rowObj[targetName] !== undefined && rowObj[targetName] !== '') return rowObj[targetName];
-    let cleanTarget = targetName.toLowerCase().replace(/[^a-z0-9]/g, '');
-    for (let key in rowObj) {
-        if (key.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanTarget) return rowObj[key];
-    }
-    return '';
-}
-
-function shuffleArray(array) {
-    let shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-}
-
-// Universal Content Parser: Checks if a string is an image link and renders it, otherwise returns text
-function parseContent(text, isReview = false) {
-    if (!text || text === '') return '';
-    let cleanText = String(text).trim();
-    let maxWidth = isReview ? '150px' : '250px';
-    
-    if (cleanText.startsWith('http') && (cleanText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
-        return `<img src="${cleanText}" style="max-width: ${maxWidth}; border-radius: 6px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
-    }
-    return cleanText;
-}
-
-// --- INITIALIZATION ---
+// Remove the window.onload PapaParse block entirely.
 window.onload = () => {
-    Papa.parse(CSV_URL, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        transformHeader: function(h) { return h.trim(); }, 
-        complete: function(results) {
-            masterDatabase = results.data;
-            showView('home'); 
-        },
-        error: function() {
-            document.getElementById('loading').innerHTML = "<h2>Error loading database.</h2>";
-        }
-    });
+    showView('home'); // Just show the home screen immediately
 };
 
-function showView(viewId) {
-    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
-    clearInterval(timerInterval); 
+// --- SECURE DATA FETCHING ---
+async function fetchQuizData(url) {
+    document.getElementById('loading').innerHTML = "<h2>Generating your session...</h2>";
+    showView('loading'); // Show loading screen while fetching
+    
+    try {
+        let response = await fetch(url);
+        currentQuizData = await response.json();
+        return true;
+    } catch (error) {
+        document.getElementById('loading').innerHTML = "<h2>Error connecting to engine.</h2>";
+        return false;
+    }
 }
 
-// --- ENGINE MODES ---
-function startDaily5() {
-    let validDB = masterDatabase.filter(q => getCol(q, 'Question Text').trim() !== '' || getCol(q, 'Image URL').trim() !== '');
-    let organic = validDB.filter(q => getCol(q, 'Category') === "Organic");
-    let physical = validDB.filter(q => getCol(q, 'Category') === "Physical");
-    let inorganic = validDB.filter(q => getCol(q, 'Category') === "Inorganic");
-    let aptitude = validDB.filter(q => getCol(q, 'Category') === "Aptitude");
-
-    let selected = [];
-    if (organic.length > 0) selected.push(shuffleArray(organic)[0]);
-    if (physical.length > 0) selected.push(shuffleArray(physical)[0]);
-    if (inorganic.length > 0) selected.push(shuffleArray(inorganic)[0]);
-    if (aptitude.length > 0) selected.push(shuffleArray(aptitude)[0]);
-
-    let remaining = shuffleArray(validDB.filter(q => !selected.includes(q)));
-    while (selected.length < 5 && remaining.length > 0) selected.push(remaining.pop());
-
-    currentQuizData = shuffleArray(selected);
-    startQuizEngine(300); 
+async function startDaily5() {
+    // Ping the API requesting ONLY 5 questions
+    let success = await fetchQuizData(API_URL + "?mode=daily5");
+    if (success) startQuizEngine(300); 
 }
 
-function startCustomPractice() {
-    let validDB = masterDatabase.filter(q => getCol(q, 'Question Text').trim() !== '' || getCol(q, 'Image URL').trim() !== '');
+async function startCustomPractice() {
     let category = document.getElementById('category-filter').value;
-    let pool = (category === "All") ? validDB : validDB.filter(q => getCol(q, 'Category') === category);
-    currentQuizData = shuffleArray(pool).slice(0, 10);
-    startQuizEngine(600); 
+    // Ping the API requesting ONLY 10 questions from a specific category
+    let success = await fetchQuizData(API_URL + "?mode=custom&category=" + encodeURIComponent(category));
+    if (success) startQuizEngine(600); 
 }
+
+// ... [Keep your startQuizEngine, renderQuestion, calculateScore functions exactly as they are] ...
 
 // --- ACTIVE QUIZ UI ---
 function startQuizEngine(timeInSeconds) {
