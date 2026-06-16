@@ -40,16 +40,34 @@
 
         <section id="practice-setup" class="view">
             <h2>Setup Custom Practice</h2>
-            <p>Select your focus area and dive in.</p>
-            <div style="margin: 2rem 0;">
-                <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Select Category:</label>
-                <select id="category-filter" style="width: 100%; padding: 0.8rem; border-radius: 8px; font-size: 1rem;">
-                    <option value="All">All Categories Mix</option>
-                    <option value="Organic">Organic Chemistry</option>
-                    <option value="Physical">Physical Chemistry</option>
-                    <option value="Inorganic">Inorganic Chemistry</option>
-                    <option value="Aptitude">Aptitude</option>
-                </select>
+            <p>Configure your session parameters below.</p>
+            <div style="margin: 2rem 0; display: grid; gap: 1rem;">
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Category:</label>
+                    <select id="category-filter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem;">
+                        <option value="All">All Categories Mix</option>
+                        <option value="Organic">Organic Chemistry</option>
+                        <option value="Physical">Physical Chemistry</option>
+                        <option value="Inorganic">Inorganic Chemistry</option>
+                        <option value="Aptitude">Aptitude</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Chapter:</label>
+                    <select id="chapter-filter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem;">
+                        <option value="All">All Chapters Mix</option>
+                        </select>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;">
+                        <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">No. of Questions:</label>
+                        <input type="number" id="num-questions" value="10" min="1" max="100" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Time Limit (mins):</label>
+                        <input type="number" id="time-limit" value="15" min="1" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;">
+                    </div>
+                </div>
             </div>
             <button onclick="startCustomPractice()">Start Session</button>
         </section>
