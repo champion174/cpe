@@ -1,10 +1,10 @@
 // ==========================================
 // CONFIGURATION
 // ==========================================
-// Replace with your new Apps Script Web App URL
+// Replace with your Apps Script Web App URL
 const API_URL = "https://script.google.com/macros/s/AKfycbwr6m2MO7X1XO2Z-mBkwxA1CqiyMTzyMCUrea99D6cVbobOT54_OW6s2NAY0njqH08V/exec"; 
 
-const ERROR_REPORT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSdVnD1ow5Vbln84CEl-HOLROE1HhJQD37uO9pwHKWyN2umSnQ/viewform?usp=pp_url&entry.309048385=REPLACE_ID"; 
+const ERROR_REPORT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSdVnD1ow5Vbln84CEl-HOLROE1HhJQD37uO9pwHKWyN2umSnQ/viewform?usp=pp_url&entry.309048385=REPLACE_ID";
 const RATING_SUBMIT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSclZsoWAwAYuVi4CTZYcXQvTVLA9FlBarA2QtH3QzufHDJBmQ/viewform?usp=pp_url&entry.217150825=REPLACE_ID&entry.624495279=REPLACE_RATING";
 
 let currentQuizData = [];
@@ -13,16 +13,52 @@ let currentQuestionIndex = 0;
 let timerInterval;
 let timeLeftRemaining = 0;
 
-// Remove the window.onload PapaParse block entirely.
-window.onload = () => {
-    showView('home'); // Just show the home screen immediately
+// --- CORE HELPERS ---
+function getCol(rowObj, targetName) {
+    if (rowObj[targetName] !== undefined && rowObj[targetName] !== '') return rowObj[targetName];
+    let cleanTarget = targetName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (let key in rowObj) {
+        if (key.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanTarget) return rowObj[key];
+    }
+    return '';
+}
+
+function parseContent(text, isReview = false) {
+    if (!text || text === '') return '';
+    let cleanText = String(text).trim();
+    let maxWidth = isReview ? '150px' : '250px';
+    if (cleanText.startsWith('http') && (cleanText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
+        return `<img src="${cleanText}" style="max-width: ${maxWidth}; border-radius: 6px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
+    }
+    return cleanText;
+}
+
+// --- INITIALIZATION & VIEW ROUTING ---
+window.onload = async () => {
+    // Fetch unique chapters to populate the dropdown
+    try {
+        let response = await fetch(API_URL + "?mode=metadata");
+        let data = await response.json();
+        let chapterSelect = document.getElementById('chapter-filter');
+        data.chapters.sort().forEach(chap => {
+            chapterSelect.innerHTML += `<option value="${chap}">${chap}</option>`;
+        });
+        showView('home'); 
+    } catch (err) {
+        document.getElementById('loading').innerHTML = "<h2>Error connecting to engine. Please refresh.</h2>";
+    }
 };
+
+function showView(viewId) {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    clearInterval(timerInterval); 
+}
 
 // --- SECURE DATA FETCHING ---
 async function fetchQuizData(url) {
     document.getElementById('loading').innerHTML = "<h2>Generating your session...</h2>";
-    showView('loading'); // Show loading screen while fetching
-    
+    showView('loading'); 
     try {
         let response = await fetch(url);
         currentQuizData = await response.json();
@@ -33,24 +69,27 @@ async function fetchQuizData(url) {
     }
 }
 
+// --- ENGINE MODES ---
 async function startDaily5() {
-    // Ping the API requesting ONLY 5 questions
     let success = await fetchQuizData(API_URL + "?mode=daily5");
-    if (success) startQuizEngine(300); 
+    if (success) startQuizEngine(300); // 5 mins for daily 5
 }
 
 async function startCustomPractice() {
     let category = document.getElementById('category-filter').value;
-    // Ping the API requesting ONLY 10 questions from a specific category
-    let success = await fetchQuizData(API_URL + "?mode=custom&category=" + encodeURIComponent(category));
-    if (success) startQuizEngine(600); 
-}
+    let chapter = document.getElementById('chapter-filter').value;
+    let numQuestions = document.getElementById('num-questions').value;
+    let timeLimitMins = document.getElementById('time-limit').value;
 
-// ... [Keep your startQuizEngine, renderQuestion, calculateScore functions exactly as they are] ...
+    let queryUrl = `${API_URL}?mode=custom&category=${encodeURIComponent(category)}&chapter=${encodeURIComponent(chapter)}&limit=${numQuestions}`;
+    
+    let success = await fetchQuizData(queryUrl);
+    if (success) startQuizEngine(timeLimitMins * 60); // Convert mins to seconds
+}
 
 // --- ACTIVE QUIZ UI ---
 function startQuizEngine(timeInSeconds) {
-    if(currentQuizData.length === 0) { alert("No questions found."); return; }
+    if(currentQuizData.length === 0) { alert("No questions found for this selection."); showView('practice-setup'); return; }
     userAnswers = {}; currentQuestionIndex = 0; timeLeftRemaining = timeInSeconds;
     showView('quiz-ui'); renderQuestion(); startTimer();
 }
@@ -58,14 +97,12 @@ function startQuizEngine(timeInSeconds) {
 function renderQuestion() {
     let qData = currentQuizData[currentQuestionIndex];
     let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
-    let q = getCol(qData, 'Difficulty ') || "Unrated";
+    let qRating = getCol(qData, 'Difficulty Rating') || "Unrated";
     
-    // Parse Questions & Images universally
     let qHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${parseContent(getCol(qData, 'Question Text'), false)}</h3>`;
     let extImage = getCol(qData, 'Image URL');
     if (extImage !== '') qHTML += `<img src="${extImage}" style="max-width: 100%; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">`;
     
-    // Display Difficulty 
     qHTML += `<div style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.85rem; padding: 0.25rem 0.75rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: bold;">⭐ Difficulty Rating: ${qRating}</div>`;
     
     document.getElementById('question-text').innerHTML = qHTML;
@@ -114,7 +151,7 @@ function calculateScore() {
         let userAns = userAnswers[index] || "Unanswered";
         let rawCorrect = String(getCol(qData, 'Correct Answer')).trim();
         let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
-        let qID = getCol(qData, 'Question ID') || `Unknown-Q${index}`; // Fallback if no ID is assigned
+        let qID = getCol(qData, 'Question ID') || `Unknown-Q${index}`; 
         
         let correctAnsText = /^[A-D]$/i.test(rawCorrect) ? String(getCol(qData, `Option ${rawCorrect.toUpperCase()}`)).trim() : rawCorrect;
         let isCorrect = userAns.toString().trim().toLowerCase() === correctAnsText.toLowerCase();
@@ -148,14 +185,11 @@ function calculateScore() {
             optionsReviewHTML = `<div style="background: #f8fafc; padding: 0.5rem; border-radius: 6px; margin-top: 0.5rem;"><p style="margin: 0; color: #64748b;">Your Answer: <b>${userAns}</b></p><p style="margin: 0.25rem 0 0 0; color: #15803d;">Correct Answer: <b>${correctAnsText}</b></p></div>`;
         }
 
-        // Parse Universal Images in Explanation
         let rawExplanation = getCol(qData, 'Explanation');
         let explanationBlock = rawExplanation !== '' 
             ? `<div class="explanation-box" style="margin-top: 1rem; background: #e0f2fe; padding: 1rem; border-radius: 8px; font-size: 0.95rem; border: 1px solid #bae6fd;"><b>Explanation:</b><br>${parseContent(rawExplanation, false)}</div>` : '';
 
-        // Dynamic Action Links
         let reportLink = ERROR_REPORT_FORM.replace('REPLACE_ID', encodeURIComponent(qID));
-        
         let ratingHTML = `
             <div style="margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
                 <div>
