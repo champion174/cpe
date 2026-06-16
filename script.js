@@ -108,15 +108,15 @@ function startQuizEngine(timeInSeconds) {
 function renderQuestion() {
     let qData = currentQuizData[currentQuestionIndex];
     let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
-    let qRating = getCol(qData, 'Difficulty Rating') || "Unrated";
+    let q = getCol(qData, 'Difficulty ') || "Unrated";
     
     // Parse Questions & Images universally
     let qHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${parseContent(getCol(qData, 'Question Text'), false)}</h3>`;
     let extImage = getCol(qData, 'Image URL');
     if (extImage !== '') qHTML += `<img src="${extImage}" style="max-width: 100%; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">`;
     
-    // Display Difficulty Rating
-    qHTML += `<div style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.85rem; padding: 0.25rem 0.75rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: bold;">⭐ Avg Rating: ${qRating}</div>`;
+    // Display Difficulty 
+    qHTML += `<div style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.85rem; padding: 0.25rem 0.75rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: bold;">⭐ Difficulty Rating: ${qRating}</div>`;
     
     document.getElementById('question-text').innerHTML = qHTML;
     
