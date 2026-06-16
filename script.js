@@ -12,6 +12,7 @@ let userAnswers = {};
 let currentQuestionIndex = 0;
 let timerInterval;
 let timeLeftRemaining = 0;
+let chapterMetadata = {}; // NEW: Stores the map of Categories -> Chapters
 
 // --- CORE HELPERS ---
 function getCol(rowObj, targetName) {
@@ -35,19 +36,45 @@ function parseContent(text, isReview = false) {
 
 // --- INITIALIZATION & VIEW ROUTING ---
 window.onload = async () => {
-    // Fetch unique chapters to populate the dropdown
     try {
         let response = await fetch(API_URL + "?mode=metadata");
-        let data = await response.json();
-        let chapterSelect = document.getElementById('chapter-filter');
-        data.chapters.sort().forEach(chap => {
-            chapterSelect.innerHTML += `<option value="${chap}">${chap}</option>`;
-        });
+        chapterMetadata = await response.json(); 
+        
+        // Listen for category changes to update the chapters
+        document.getElementById('category-filter').addEventListener('change', updateChapterDropdown);
+        
+        updateChapterDropdown(); // Populate initially
         showView('home'); 
     } catch (err) {
         document.getElementById('loading').innerHTML = "<h2>Error connecting to engine. Please refresh.</h2>";
     }
 };
+
+// --- NEW: DYNAMIC CHAPTER DROPDOWN ---
+function updateChapterDropdown() {
+    let catSelect = document.getElementById('category-filter').value;
+    let chapSelect = document.getElementById('chapter-filter');
+    chapSelect.innerHTML = '<option value="All">All Chapters Mix</option>';
+
+    let chaptersToAdd = [];
+    
+    if (catSelect === "All") {
+        // If "All Categories Mix", merge all chapters from every category
+        Object.values(chapterMetadata).forEach(chaps => {
+            chaptersToAdd = chaptersToAdd.concat(chaps);
+        });
+    } else if (chapterMetadata[catSelect]) {
+        // Only get chapters for the selected category
+        chaptersToAdd = chapterMetadata[catSelect];
+    }
+
+    // Remove duplicates and sort alphabetically
+    let uniqueChapters = [...new Set(chaptersToAdd)].sort();
+
+    uniqueChapters.forEach(chap => {
+        chapSelect.innerHTML += `<option value="${chap}">${chap}</option>`;
+    });
+}
 
 function showView(viewId) {
     document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
@@ -84,8 +111,10 @@ async function startCustomPractice() {
     let queryUrl = `${API_URL}?mode=custom&category=${encodeURIComponent(category)}&chapter=${encodeURIComponent(chapter)}&limit=${numQuestions}`;
     
     let success = await fetchQuizData(queryUrl);
-    if (success) startQuizEngine(timeLimitMins * 60); // Convert mins to seconds
+    if (success) startQuizEngine(timeLimitMins * 60); 
 }
+
+// ... [Keep everything from startQuizEngine() downwards exactly as it is] ...
 
 // --- ACTIVE QUIZ UI ---
 function startQuizEngine(timeInSeconds) {
