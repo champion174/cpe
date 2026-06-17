@@ -132,6 +132,7 @@ function renderQuestion() {
     let extImage = getCol(qData, 'Image URL');
     if (extImage !== '') qHTML += `<img src="${extImage}" style="max-width: 100%; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">`;
     
+    // Updated to match your "Difficulty Rating" text change
     qHTML += `<div style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.85rem; padding: 0.25rem 0.75rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: bold;">⭐ Difficulty Rating: ${qRating}</div>`;
     
     document.getElementById('question-text').innerHTML = qHTML;
@@ -146,8 +147,9 @@ function renderQuestion() {
         ['A', 'B', 'C', 'D'].forEach(opt => {
             let optText = getCol(qData, `Option ${opt}`);
             if (optText) {
-                let isSel = userAnswers[currentQuestionIndex] === optText ? 'selected' : '';
-                optionsHTML += `<button class="option-btn ${isSel}" onclick="selectOption('${optText}')"><b>${opt}.</b> ${parseContent(optText, false)}</button>`;
+                // THE FIX: We now just store and check the letter (opt) instead of the text
+                let isSel = userAnswers[currentQuestionIndex] === opt ? 'selected' : '';
+                optionsHTML += `<button class="option-btn ${isSel}" onclick="selectOption('${opt}')"><b>${opt}.</b> ${parseContent(optText, false)}</button>`;
             }
         });
     }
@@ -182,8 +184,33 @@ function calculateScore() {
         let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
         let qID = getCol(qData, 'Question ID') || `Unknown-Q${index}`; 
         
-        let correctAnsText = /^[A-D]$/i.test(rawCorrect) ? String(getCol(qData, `Option ${rawCorrect.toUpperCase()}`)).trim() : rawCorrect;
-        let isCorrect = userAns.toString().trim().toLowerCase() === correctAnsText.toLowerCase();
+        let isCorrect = false;
+        let correctAnsText = rawCorrect;
+        let correctLetter = "None";
+
+        // Determine the correct letter to match against the new logic
+        if (qType !== 'FITB') {
+            if (/^[A-D]$/i.test(rawCorrect)) {
+                correctLetter = rawCorrect.toUpperCase();
+                correctAnsText = String(getCol(qData, `Option ${correctLetter}`)).trim();
+            } else {
+                // Fallback: If you typed the full string in the DB instead of just the letter
+                ['A', 'B', 'C', 'D'].forEach(opt => {
+                    let optText = String(getCol(qData, `Option ${opt}`)).trim();
+                    if (optText.toLowerCase() === rawCorrect.toLowerCase()) {
+                        correctLetter = opt;
+                        correctAnsText = optText;
+                    }
+                });
+            }
+            
+            if (userAns === correctLetter) isCorrect = true;
+            
+        } else {
+            // FITB still checks the exact typed string
+            if (userAns.toString().trim().toLowerCase() === correctAnsText.toLowerCase()) isCorrect = true;
+        }
+
         if (isCorrect) score++;
 
         let statusText = isCorrect 
@@ -195,12 +222,8 @@ function calculateScore() {
             ['A', 'B', 'C', 'D'].forEach(opt => {
                 let optText = getCol(qData, `Option ${opt}`);
                 if (optText) {
-                    let cleanUser = userAns.toString().trim().toLowerCase();
-                    let cleanCorrect = correctAnsText.toString().trim().toLowerCase();
-                    let cleanOpt = optText.toString().trim().toLowerCase();
-
-                    let isUserChoice = (cleanUser === cleanOpt);
-                    let isActualCorrect = (cleanCorrect === cleanOpt);
+                    let isUserChoice = (userAns === opt);
+                    let isActualCorrect = (correctLetter === opt);
                     
                     let bgStyle = isActualCorrect ? 'background: #dcfce7; border: 1px solid #22c55e; color: #15803d; font-weight: bold;' 
                                 : (isUserChoice && !isActualCorrect) ? 'background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c;' 
