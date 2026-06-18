@@ -123,6 +123,13 @@ function startQuizEngine(timeInSeconds) {
     showView('quiz-ui'); renderQuestion(); startTimer();
 }
 
+// --- ACTIVE QUIZ UI ---
+function startQuizEngine(timeInSeconds) {
+    if(currentQuizData.length === 0) { alert("No questions found for this selection."); showView('practice-setup'); return; }
+    userAnswers = {}; currentQuestionIndex = 0; timeLeftRemaining = timeInSeconds;
+    showView('quiz-ui'); renderQuestion(); startTimer();
+}
+
 function renderQuestion() {
     let qData = currentQuizData[currentQuestionIndex];
     let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
@@ -132,7 +139,6 @@ function renderQuestion() {
     let extImage = getCol(qData, 'Image URL');
     if (extImage !== '') qHTML += `<img src="${extImage}" style="max-width: 100%; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">`;
     
-    // Updated to match your "Difficulty Rating" text change
     qHTML += `<div style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.85rem; padding: 0.25rem 0.75rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: bold;">⭐ Difficulty Rating: ${qRating}</div>`;
     
     document.getElementById('question-text').innerHTML = qHTML;
@@ -147,13 +153,16 @@ function renderQuestion() {
         ['A', 'B', 'C', 'D'].forEach(opt => {
             let optText = getCol(qData, `Option ${opt}`);
             if (optText) {
-                // THE FIX: We now just store and check the letter (opt) instead of the text
                 let isSel = userAnswers[currentQuestionIndex] === opt ? 'selected' : '';
                 optionsHTML += `<button class="option-btn ${isSel}" onclick="selectOption('${opt}')"><b>${opt}.</b> ${parseContent(optText, false)}</button>`;
             }
         });
     }
     container.innerHTML = optionsHTML;
+
+    // THE FIX: Hide 'Previous' on Q1, hide 'Next' on the last question
+    document.getElementById('prev-btn').style.visibility = (currentQuestionIndex === 0) ? 'hidden' : 'visible';
+    document.getElementById('next-btn').style.visibility = (currentQuestionIndex === currentQuizData.length - 1) ? 'hidden' : 'visible';
 }
 
 function selectOption(t) { userAnswers[currentQuestionIndex] = t; renderQuestion(); }
@@ -166,11 +175,43 @@ function startTimer() {
         timeLeftRemaining--;
         let m = Math.floor(timeLeftRemaining / 60), s = timeLeftRemaining % 60;
         document.getElementById('time').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-        if (timeLeftRemaining <= 0) calculateScore(); 
+        
+        // Auto-submit if time runs out, regardless of what view they are on
+        if (timeLeftRemaining <= 0) {
+            calculateScore(); 
+        }
     }, 1000);
 }
 
-function showReview() { if(confirm("Submit answers?")) calculateScore(); }
+// --- NEW PRE-SUBMIT REVIEW UI ---
+function buildPreSubmitReview() {
+    let listHTML = '';
+    
+    currentQuizData.forEach((qData, index) => {
+        let userAns = userAnswers[index];
+        let displayAns = userAns ? `<span style="color: var(--primary); font-weight: bold;">${userAns}</span>` : `<span style="color: var(--danger); font-weight: bold;">Unanswered</span>`;
+        let qText = parseContent(getCol(qData, 'Question Text'), true); // use true to keep images small in review list
+        
+        listHTML += `
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <div style="flex: 1; padding-right: 1rem;">
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.95rem;"><b>Q${index + 1}:</b> ${qText}</p>
+                    <p style="margin: 0; font-size: 0.9rem;">Your Answer: ${displayAns}</p>
+                </div>
+                <button onclick="jumpToQuestion(${index})" style="background: #cbd5e1; color: var(--text); font-size: 0.85rem; padding: 0.4rem 0.8rem; height: fit-content;">Change</button>
+            </div>
+        `;
+    });
+    
+    document.getElementById('pre-submit-list').innerHTML = listHTML;
+    showView('pre-submit-review');
+}
+
+function jumpToQuestion(index) {
+    currentQuestionIndex = index;
+    renderQuestion();
+    showView('quiz-ui');
+}
 
 // --- REVIEW & SCORING UI ---
 function calculateScore() {
