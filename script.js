@@ -1,9 +1,7 @@
 // ==========================================
 // CONFIGURATION
 // ==========================================
-// Replace with your Apps Script Web App URL
 const API_URL = "https://script.google.com/macros/s/AKfycbwr6m2MO7X1XO2Z-mBkwxA1CqiyMTzyMCUrea99D6cVbobOT54_OW6s2NAY0njqH08V/exec"; 
-
 const ERROR_REPORT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSdVnD1ow5Vbln84CEl-HOLROE1HhJQD37uO9pwHKWyN2umSnQ/viewform?usp=pp_url&entry.309048385=REPLACE_ID";
 const RATING_SUBMIT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSclZsoWAwAYuVi4CTZYcXQvTVLA9FlBarA2QtH3QzufHDJBmQ/viewform?usp=pp_url&entry.217150825=REPLACE_ID&entry.624495279=REPLACE_RATING";
 
@@ -12,7 +10,7 @@ let userAnswers = {};
 let currentQuestionIndex = 0;
 let timerInterval;
 let timeLeftRemaining = 0;
-let chapterMetadata = {}; // NEW: Stores the map of Categories -> Chapters
+let chapterMetadata = {}; 
 
 // --- CORE HELPERS ---
 function getCol(rowObj, targetName) {
@@ -24,12 +22,12 @@ function getCol(rowObj, targetName) {
     return '';
 }
 
-function parseContent(text, isReview = false) {
+// THE FIX: Added customMaxWidth so we can make questions big and options small
+function parseContent(text, customMaxWidth = '250px') {
     if (!text || text === '') return '';
     let cleanText = String(text).trim();
-    let maxWidth = isReview ? '150px' : '250px';
     if (cleanText.startsWith('http') && (cleanText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
-        return `<img src="${cleanText}" style="max-width: ${maxWidth}; border-radius: 6px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
+        return `<img src="${cleanText}" style="max-width: ${customMaxWidth}; height: auto; border-radius: 6px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
     }
     return cleanText;
 }
@@ -39,38 +37,29 @@ window.onload = async () => {
     try {
         let response = await fetch(API_URL + "?mode=metadata");
         chapterMetadata = await response.json(); 
-        
-        // Listen for category changes to update the chapters
         document.getElementById('category-filter').addEventListener('change', updateChapterDropdown);
-        
-        updateChapterDropdown(); // Populate initially
+        updateChapterDropdown(); 
         showView('home'); 
     } catch (err) {
         document.getElementById('loading').innerHTML = "<h2>Error connecting to engine. Please refresh.</h2>";
     }
 };
 
-// --- NEW: DYNAMIC CHAPTER DROPDOWN ---
 function updateChapterDropdown() {
     let catSelect = document.getElementById('category-filter').value;
     let chapSelect = document.getElementById('chapter-filter');
     chapSelect.innerHTML = '<option value="All">All Chapters Mix</option>';
 
     let chaptersToAdd = [];
-    
     if (catSelect === "All") {
-        // If "All Categories Mix", merge all chapters from every category
         Object.values(chapterMetadata).forEach(chaps => {
             chaptersToAdd = chaptersToAdd.concat(chaps);
         });
     } else if (chapterMetadata[catSelect]) {
-        // Only get chapters for the selected category
         chaptersToAdd = chapterMetadata[catSelect];
     }
 
-    // Remove duplicates and sort alphabetically
     let uniqueChapters = [...new Set(chaptersToAdd)].sort();
-
     uniqueChapters.forEach(chap => {
         chapSelect.innerHTML += `<option value="${chap}">${chap}</option>`;
     });
@@ -99,7 +88,7 @@ async function fetchQuizData(url) {
 // --- ENGINE MODES ---
 async function startDaily5() {
     let success = await fetchQuizData(API_URL + "?mode=daily5");
-    if (success) startQuizEngine(300); // 5 mins for daily 5
+    if (success) startQuizEngine(300); 
 }
 
 async function startCustomPractice() {
@@ -109,18 +98,8 @@ async function startCustomPractice() {
     let timeLimitMins = document.getElementById('time-limit').value;
 
     let queryUrl = `${API_URL}?mode=custom&category=${encodeURIComponent(category)}&chapter=${encodeURIComponent(chapter)}&limit=${numQuestions}`;
-    
     let success = await fetchQuizData(queryUrl);
     if (success) startQuizEngine(timeLimitMins * 60); 
-}
-
-// ... [Keep everything from startQuizEngine() downwards exactly as it is] ...
-
-// --- ACTIVE QUIZ UI ---
-function startQuizEngine(timeInSeconds) {
-    if(currentQuizData.length === 0) { alert("No questions found for this selection."); showView('practice-setup'); return; }
-    userAnswers = {}; currentQuestionIndex = 0; timeLeftRemaining = timeInSeconds;
-    showView('quiz-ui'); renderQuestion(); startTimer();
 }
 
 // --- ACTIVE QUIZ UI ---
@@ -135,7 +114,8 @@ function renderQuestion() {
     let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
     let qRating = getCol(qData, 'Difficulty Rating') || "Unrated";
     
-    let qHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${parseContent(getCol(qData, 'Question Text'), false)}</h3>`;
+    // THE FIX: '100%' forces the question image to stretch to a readable width
+    let qHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${parseContent(getCol(qData, 'Question Text'), '100%')}</h3>`;
     let extImage = getCol(qData, 'Image URL');
     if (extImage !== '') qHTML += `<img src="${extImage}" style="max-width: 100%; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">`;
     
@@ -154,13 +134,13 @@ function renderQuestion() {
             let optText = getCol(qData, `Option ${opt}`);
             if (optText) {
                 let isSel = userAnswers[currentQuestionIndex] === opt ? 'selected' : '';
-                optionsHTML += `<button class="option-btn ${isSel}" onclick="selectOption('${opt}')"><b>${opt}.</b> ${parseContent(optText, false)}</button>`;
+                // THE FIX: Options stay restricted to '250px' so they don't break the layout
+                optionsHTML += `<button class="option-btn ${isSel}" onclick="selectOption('${opt}')"><b>${opt}.</b> ${parseContent(optText, '250px')}</button>`;
             }
         });
     }
     container.innerHTML = optionsHTML;
 
-    // THE FIX: Hide 'Previous' on Q1, hide 'Next' on the last question
     document.getElementById('prev-btn').style.visibility = (currentQuestionIndex === 0) ? 'hidden' : 'visible';
     document.getElementById('next-btn').style.visibility = (currentQuestionIndex === currentQuizData.length - 1) ? 'hidden' : 'visible';
 }
@@ -175,30 +155,23 @@ function startTimer() {
         timeLeftRemaining--;
         let m = Math.floor(timeLeftRemaining / 60), s = timeLeftRemaining % 60;
         document.getElementById('time').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-        
-        // Auto-submit if time runs out, regardless of what view they are on
-        if (timeLeftRemaining <= 0) {
-            calculateScore(); 
-        }
+        if (timeLeftRemaining <= 0) calculateScore(); 
     }, 1000);
 }
 
 // --- NEW PRE-SUBMIT REVIEW UI ---
 function buildPreSubmitReview() {
     let listHTML = '';
-    
     currentQuizData.forEach((qData, index) => {
         let userAns = userAnswers[index];
         let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
         
-        // 1. Render Question Text & Images
-        let qTextDisplay = parseContent(getCol(qData, 'Question Text'), true);
+        let qTextDisplay = parseContent(getCol(qData, 'Question Text'), '100%');
         let extImage = getCol(qData, 'Image URL');
         if (extImage !== '') {
-            qTextDisplay += `<br><img src="${extImage}" style="max-width: 250px; border-radius: 8px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
+            qTextDisplay += `<br><img src="${extImage}" style="max-width: 100%; border-radius: 8px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
         }
 
-        // 2. Render Options and Highlight the User's Choice
         let optionsHTML = '';
         if (qType === 'FITB') {
             let displayAns = userAns ? `<span style="color: #0ea5e9; font-weight: bold;">${userAns}</span>` : `<span style="color: #ef4444; font-weight: bold;">Unanswered</span>`;
@@ -208,28 +181,20 @@ function buildPreSubmitReview() {
                 let optText = getCol(qData, `Option ${opt}`);
                 if (optText) {
                     let isSel = (userAns === opt);
-                    
-                    // Selected options get a soft blue highlight; unselected are muted grey
                     let bgStyle = isSel ? 'background: #e0f2fe; border: 1px solid #0ea5e9; color: #0284c7;' : 'background: transparent; border: 1px solid #e2e8f0; color: #64748b;';
                     let weight = isSel ? 'font-weight: bold;' : '';
-
                     optionsHTML += `
                         <div style="${bgStyle} ${weight} padding: 0.5rem 0.8rem; margin-top: 0.4rem; border-radius: 6px; font-size: 0.9rem;">
-                            ${opt}. ${parseContent(optText, true)}
+                            ${opt}. ${parseContent(optText, '150px')}
                         </div>`;
                 }
             });
-            
-            if (!userAns) {
-                optionsHTML += `<p style="color: #ef4444; font-weight: bold; font-size: 0.9rem; margin-top: 0.5rem;">Unanswered</p>`;
-            }
+            if (!userAns) optionsHTML += `<p style="color: #ef4444; font-weight: bold; font-size: 0.9rem; margin-top: 0.5rem;">Unanswered</p>`;
         }
         
-        // 3. Assemble the Card
         listHTML += `
             <div style="background: #ffffff; padding: 1.5rem; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 1rem; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                 <button onclick="jumpToQuestion(${index})" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #e2e8f0; color: #0f172a; font-weight: 600; font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 6px; border: none; cursor: pointer; transition: background 0.2s;">Change</button>
-                
                 <div style="padding-right: 5rem;">
                     <p style="margin: 0 0 1rem 0; font-size: 1rem; color: #0f172a;"><b>Q${index + 1}:</b> ${qTextDisplay}</p>
                     ${optionsHTML}
@@ -264,13 +229,11 @@ function calculateScore() {
         let correctAnsText = rawCorrect;
         let correctLetter = "None";
 
-        // Determine the correct letter to match against the new logic
         if (qType !== 'FITB') {
             if (/^[A-D]$/i.test(rawCorrect)) {
                 correctLetter = rawCorrect.toUpperCase();
                 correctAnsText = String(getCol(qData, `Option ${correctLetter}`)).trim();
             } else {
-                // Fallback: If you typed the full string in the DB instead of just the letter
                 ['A', 'B', 'C', 'D'].forEach(opt => {
                     let optText = String(getCol(qData, `Option ${opt}`)).trim();
                     if (optText.toLowerCase() === rawCorrect.toLowerCase()) {
@@ -279,11 +242,8 @@ function calculateScore() {
                     }
                 });
             }
-            
             if (userAns === correctLetter) isCorrect = true;
-            
         } else {
-            // FITB still checks the exact typed string
             if (userAns.toString().trim().toLowerCase() === correctAnsText.toLowerCase()) isCorrect = true;
         }
 
@@ -306,7 +266,7 @@ function calculateScore() {
                                 : 'background: transparent; border: 1px solid #e2e8f0; color: #0f172a;';
                     let icon = isActualCorrect ? ' ✓' : (isUserChoice ? ' (Your Answer)' : '');
 
-                    optionsReviewHTML += `<div style="${bgStyle} padding: 0.5rem; margin-top: 0.25rem; border-radius: 6px; font-size: 0.95rem;">${opt}. ${parseContent(optText, true)} ${icon}</div>`;
+                    optionsReviewHTML += `<div style="${bgStyle} padding: 0.5rem; margin-top: 0.25rem; border-radius: 6px; font-size: 0.95rem;">${opt}. ${parseContent(optText, '150px')} ${icon}</div>`;
                 }
             });
         } else {
@@ -315,7 +275,7 @@ function calculateScore() {
 
         let rawExplanation = getCol(qData, 'Explanation');
         let explanationBlock = rawExplanation !== '' 
-            ? `<div class="explanation-box" style="margin-top: 1rem; background: #e0f2fe; padding: 1rem; border-radius: 8px; font-size: 0.95rem; border: 1px solid #bae6fd;"><b>Explanation:</b><br>${parseContent(rawExplanation, false)}</div>` : '';
+            ? `<div class="explanation-box" style="margin-top: 1rem; background: #e0f2fe; padding: 1rem; border-radius: 8px; font-size: 0.95rem; border: 1px solid #bae6fd;"><b>Explanation:</b><br>${parseContent(rawExplanation, '100%')}</div>` : '';
 
         let reportLink = ERROR_REPORT_FORM.replace('REPLACE_ID', encodeURIComponent(qID));
         let ratingHTML = `
@@ -328,7 +288,7 @@ function calculateScore() {
             </div>
         `;
 
-        let qTextDisplay = parseContent(getCol(qData, 'Question Text'), false);
+        let qTextDisplay = parseContent(getCol(qData, 'Question Text'), '100%');
         let qImage = getCol(qData, 'Image URL');
         if (qImage !== '') qTextDisplay += `<img src="${qImage}" style="max-width: 100%; border-radius: 8px; margin-top: 1rem; display: block; border: 1px solid #e2e8f0;">`;
 
