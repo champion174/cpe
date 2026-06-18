@@ -75,11 +75,25 @@
         <section id="quiz-ui" class="view">
             <div id="timer-display">Time: <span id="time">00:00</span></div>
             <div style="clear: both;"></div>
-            <div id="question-text"></div> <div id="options-container"></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
             <div class="quiz-controls">
-                <button onclick="prevQuestion()" style="background: var(--text-muted);">← Previous</button>
-                <button onclick="nextQuestion()" style="background: var(--text-muted);">Next →</button>
-                <button onclick="showReview()">Review & Submit</button>
+                <button id="prev-btn" onclick="prevQuestion()" style="background: var(--text-muted);">← Previous</button>
+                <button id="next-btn" onclick="nextQuestion()" style="background: var(--text-muted);">Next →</button>
+                <button onclick="buildPreSubmitReview()">Review & Submit</button>
+            </div>
+        </section>
+
+        <section id="pre-submit-review" class="view">
+            <h2>Review Your Answers</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Please review your selections before final submission. Click "Change" to jump back to a specific question.</p>
+            
+            <div id="pre-submit-list" style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                </div>
+            
+            <div style="display: flex; gap: 1rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
+                <button onclick="showView('quiz-ui')" style="background: var(--text-muted);">Return to Quiz</button>
+                <button onclick="calculateScore()" style="background: var(--success); font-size: 1.1rem; padding: 0.8rem 2rem;">Final Submit</button>
             </div>
         </section>
 
