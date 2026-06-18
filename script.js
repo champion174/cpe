@@ -189,16 +189,51 @@ function buildPreSubmitReview() {
     
     currentQuizData.forEach((qData, index) => {
         let userAns = userAnswers[index];
-        let displayAns = userAns ? `<span style="color: var(--primary); font-weight: bold;">${userAns}</span>` : `<span style="color: var(--danger); font-weight: bold;">Unanswered</span>`;
-        let qText = parseContent(getCol(qData, 'Question Text'), true); // use true to keep images small in review list
+        let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
         
+        // 1. Render Question Text & Images
+        let qTextDisplay = parseContent(getCol(qData, 'Question Text'), true);
+        let extImage = getCol(qData, 'Image URL');
+        if (extImage !== '') {
+            qTextDisplay += `<br><img src="${extImage}" style="max-width: 250px; border-radius: 8px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
+        }
+
+        // 2. Render Options and Highlight the User's Choice
+        let optionsHTML = '';
+        if (qType === 'FITB') {
+            let displayAns = userAns ? `<span style="color: #0ea5e9; font-weight: bold;">${userAns}</span>` : `<span style="color: #ef4444; font-weight: bold;">Unanswered</span>`;
+            optionsHTML = `<p style="margin: 0.5rem 0 0 0; font-size: 0.95rem;">Your Answer: ${displayAns}</p>`;
+        } else {
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                let optText = getCol(qData, `Option ${opt}`);
+                if (optText) {
+                    let isSel = (userAns === opt);
+                    
+                    // Selected options get a soft blue highlight; unselected are muted grey
+                    let bgStyle = isSel ? 'background: #e0f2fe; border: 1px solid #0ea5e9; color: #0284c7;' : 'background: transparent; border: 1px solid #e2e8f0; color: #64748b;';
+                    let weight = isSel ? 'font-weight: bold;' : '';
+
+                    optionsHTML += `
+                        <div style="${bgStyle} ${weight} padding: 0.5rem 0.8rem; margin-top: 0.4rem; border-radius: 6px; font-size: 0.9rem;">
+                            ${opt}. ${parseContent(optText, true)}
+                        </div>`;
+                }
+            });
+            
+            if (!userAns) {
+                optionsHTML += `<p style="color: #ef4444; font-weight: bold; font-size: 0.9rem; margin-top: 0.5rem;">Unanswered</p>`;
+            }
+        }
+        
+        // 3. Assemble the Card
         listHTML += `
-            <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                <div style="flex: 1; padding-right: 1rem;">
-                    <p style="margin: 0 0 0.5rem 0; font-size: 0.95rem;"><b>Q${index + 1}:</b> ${qText}</p>
-                    <p style="margin: 0; font-size: 0.9rem;">Your Answer: ${displayAns}</p>
+            <div style="background: #ffffff; padding: 1.5rem; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 1rem; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <button onclick="jumpToQuestion(${index})" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #e2e8f0; color: #0f172a; font-weight: 600; font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 6px; border: none; cursor: pointer; transition: background 0.2s;">Change</button>
+                
+                <div style="padding-right: 5rem;">
+                    <p style="margin: 0 0 1rem 0; font-size: 1rem; color: #0f172a;"><b>Q${index + 1}:</b> ${qTextDisplay}</p>
+                    ${optionsHTML}
                 </div>
-                <button onclick="jumpToQuestion(${index})" style="background: #cbd5e1; color: var(--text); font-size: 0.85rem; padding: 0.4rem 0.8rem; height: fit-content;">Change</button>
             </div>
         `;
     });
