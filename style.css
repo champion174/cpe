@@ -34,18 +34,22 @@ header {
 
 h1 { color: var(--primary); margin: 0; font-size: 1.5rem;}
 
-nav button, .btn-link, button {
+nav button, .btn-link {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 0.6rem 1.2rem;
+    padding: 0.6rem 1rem;
     border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
     font-weight: 600;
     transition: all 0.2s ease;
-    min-width: 160px; /* Forces buttons to be the same size */
+    
+    display: inline-block; 
+    width: 170px;         
     text-align: center;
+    box-sizing: border-box; 
+    margin-right: 0.5rem;
 }
 
 nav button:hover, button:hover {
