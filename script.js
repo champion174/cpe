@@ -22,16 +22,20 @@ function getCol(rowObj, targetName) {
     return '';
 }
 
-// THE FIX: Added customMaxWidth so we can make questions big and options small
 function parseContent(text, customMaxWidth = '250px') {
     if (!text || text === '') return '';
     let cleanText = String(text).trim();
-    if (cleanText.startsWith('http') && (cleanText.match(/\.(jpeg|jpg|gif|png)$/i) != null)) {
+    
+    // Check if it has a normal image extension OR if it's a GitHub CDN link
+    let isStandardImage = cleanText.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
+    let isGithubAsset = cleanText.includes('github.com/user-attachments/assets/');
+
+    if (cleanText.startsWith('http') && (isStandardImage || isGithubAsset)) {
         return `<img src="${cleanText}" style="max-width: ${customMaxWidth}; height: auto; border-radius: 6px; margin-top: 0.5rem; display: block; border: 1px solid #e2e8f0;">`;
     }
+    
     return cleanText;
 }
-
 // --- INITIALIZATION & VIEW ROUTING ---
 window.onload = async () => {
     try {
