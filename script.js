@@ -6,11 +6,12 @@ const ERROR_REPORT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSdVnD1ow5Vbl
 const RATING_SUBMIT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSclZsoWAwAYuVi4CTZYcXQvTVLA9FlBarA2QtH3QzufHDJBmQ/viewform?usp=pp_url&entry.217150825=REPLACE_ID&entry.624495279=REPLACE_RATING";
 
 let currentQuizData = [];
-let userAnswers = {}; // For MSQ, this will store an array: ["A", "C"]
+let userAnswers = {}; 
 let currentQuestionIndex = 0;
 let timerInterval;
 let timeLeftRemaining = 0;
 let chapterMetadata = {}; 
+let examMetadata = {}; // THE FIX: New variable to store the Exam -> Part mapping
 
 // --- CORE HELPERS ---
 function getCol(rowObj, targetName) {
@@ -38,18 +39,23 @@ window.onload = async () => {
     try {
         let response = await fetch(API_URL + "?mode=metadata");
         let data = await response.json(); 
+        
+        // Store the maps
         chapterMetadata = data.categoryMap; 
+        examMetadata = data.examMap; 
         
         let examSelect = document.getElementById('exam-filter');
         data.exams.sort().forEach(ex => examSelect.innerHTML += `<option value="${ex}">${ex}</option>`);
         
-        let partSelect = document.getElementById('part-filter');
-        data.parts.sort().forEach(pt => partSelect.innerHTML += `<option value="${pt}">${pt}</option>`);
-
         let catSelect = document.getElementById('category-filter');
         data.categories.sort().forEach(cat => catSelect.innerHTML += `<option value="${cat}">${cat}</option>`);
         
+        // THE FIX: Add an event listener to the Exam dropdown
+        document.getElementById('exam-filter').addEventListener('change', updatePartDropdown);
         document.getElementById('category-filter').addEventListener('change', updateChapterDropdown);
+        
+        // Initialize dropdowns
+        updatePartDropdown();
         updateChapterDropdown(); 
         showView('home'); 
     } catch (err) {
@@ -57,13 +63,33 @@ window.onload = async () => {
     }
 };
 
+// THE FIX: New function to dynamically filter Parts based on Exam
+function updatePartDropdown() {
+    let exSelect = document.getElementById('exam-filter').value;
+    let ptSelect = document.getElementById('part-filter');
+    ptSelect.innerHTML = '<option value="All">Select Part...</option>';
+    
+    let partsToAdd = [];
+    if (exSelect === "All") {
+        Object.values(examMetadata).forEach(pts => partsToAdd = partsToAdd.concat(pts));
+    } else if (examMetadata[exSelect]) {
+        partsToAdd = examMetadata[exSelect];
+    }
+
+    [...new Set(partsToAdd)].sort().forEach(pt => ptSelect.innerHTML += `<option value="${pt}">${pt}</option>`);
+}
+
 function updateChapterDropdown() {
     let catSelect = document.getElementById('category-filter').value;
     let chapSelect = document.getElementById('chapter-filter');
     chapSelect.innerHTML = '<option value="All">Select Chapter...</option>';
+    
     let chaptersToAdd = [];
-    if (catSelect === "All") Object.values(chapterMetadata).forEach(chaps => chaptersToAdd = chaptersToAdd.concat(chaps));
-    else if (chapterMetadata[catSelect]) chaptersToAdd = chapterMetadata[catSelect];
+    if (catSelect === "All") {
+        Object.values(chapterMetadata).forEach(chaps => chaptersToAdd = chaptersToAdd.concat(chaps));
+    } else if (chapterMetadata[catSelect]) {
+        chaptersToAdd = chapterMetadata[catSelect];
+    }
 
     [...new Set(chaptersToAdd)].sort().forEach(chap => chapSelect.innerHTML += `<option value="${chap}">${chap}</option>`);
 }
