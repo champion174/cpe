@@ -34,25 +34,45 @@ header {
 
 h1 { color: var(--primary); margin: 0; font-size: 1.5rem;}
 
-nav button, .btn-link {
+/* 1. Global Button Styles (Restores the modern look to your Quiz UI) */
+button, .btn-link {
     background: var(--primary);
     color: white;
     border: none;
-    padding: 0.6rem 1rem;
+    padding: 0.6rem 1.2rem;
     border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
     font-weight: 600;
+    font-size: 1rem;
+    font-family: inherit;
     transition: all 0.2s ease;
-    
-    display: inline-block; 
-    width: 170px;         
-    text-align: center;
-    box-sizing: border-box; 
-    margin-right: 0.5rem;
+    box-sizing: border-box;
+    display: inline-block;
 }
 
-nav button:hover, button:hover {
+button:hover, .btn-link:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* 2. Top Navigation Lock (Forces exact equal sizing for Home, Practice, Add Question) */
+nav {
+    display: flex;
+    align-items: center;
+}
+
+nav button, nav .btn-link {
+    display: inline-flex; /* Flexbox forces identical rendering between links and buttons */
+    align-items: center;
+    justify-content: center;
+    width: 170px;
+    height: 44px; /* Hard-locking the height prevents the link from stretching */
+    padding: 0;   /* Removing padding lets width/height dictate the size */
+    margin-left: 0.5rem;
+}
+
+button:hover, .btn-link:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
 }
