@@ -59,11 +59,6 @@ window.onload = async () => {
         updatePartDropdown();
         updateChapterDropdown(); 
 
-        // 2. Fetch Minigames Data
-        let gamesResponse = await fetch(API_URL + "?mode=minigames");
-        let gamesData = await gamesResponse.json();
-        
-        // Initialize Daily Fact based on day index
         // 2. Fetch Minigames Data (Includes Wordle, Crossword, and Facts)
         let gamesResponse = await fetch(API_URL + "?mode=minigames");
         let gamesData = await gamesResponse.json();
