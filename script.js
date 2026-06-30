@@ -428,7 +428,7 @@ function initWordle(word) {
     // Add global listener only once
     if(!window.wordleListenerAdded) {
         document.addEventListener('keydown', (e) => {
-            if(!document.getElementById('home').classList.contains('active') || document.activeElement.tagName === 'INPUT') return;
+            if(!document.getElementById('wordle-view').classList.contains('active') || document.activeElement.tagName === 'INPUT') return;
             handleKeyPress(e.key);
         });
         window.wordleListenerAdded = true;
@@ -517,6 +517,9 @@ function updateKeyState(letter, newColor, blockColor1, blockColor2) {
 // GAME LOGIC: CROSSWORD
 // ==========================================
 function initCrossword(cwData) {
+    let acrossRaw = cwData.across.replace('<b>Across</b><br>', '').replace('Across<br>', '');
+    let downRaw = cwData.down.replace('<b>Down</b><br>', '').replace('Down<br>', '');
+    
     document.getElementById('crossword-across').innerHTML = cwData.across;
     document.getElementById('crossword-down').innerHTML = cwData.down;
 
