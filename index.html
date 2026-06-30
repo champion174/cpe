@@ -18,71 +18,7 @@
     </header>
 
     <main>
-        <section id="loading" class="view active">
-            <div style="text-align: center; padding: 3rem;">
-                <h2>Initializing Database...</h2>
-                <p>Fetching the questions.</p>
-            </div>
-        </section>
-
-        <section id="home" class="view">
-            <div class="hero-section">
-                <h2>Welcome to the CPE</h2>
-                <p>Master your concepts with crowdsourced practice problems.</p>
-                
-                <div style="background: #e0f2fe; padding: 2rem; border-radius: 12px; margin-top: 2rem;">
-                    <h3>The Daily 5 Challenge</h3>
-                    <p>Test your knowledge with 5 newly curated questions covering Organic, Inorganic, Physical, and Aptitude.</p>
-                    <button style="font-size: 1.2rem; padding: 0.8rem 2rem; margin-top: 1rem;" onclick="startDaily5()">Start Today's Challenge</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="practice-setup" class="view">
-            <h2>Setup Custom Practice</h2>
-            <p>Configure your session parameters below.</p>
-            
-            <div style="margin: 2rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Exam:</label>
-                    <select id="exam-filter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem;">
-                        <option value="All">Select Exam...</option>
-                        </select>
-                </div>
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Part:</label>
-                    <select id="part-filter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem;">
-                        <option value="All">Select Part...</option>
-                        </select>
-                </div>
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Category:</label>
-                    <select id="category-filter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem;">
-                        <option value="All">Select Category...</option>
-                        </select>
-                </div>
-                <div>
-                    <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Chapter:</label>
-                    <select id="chapter-filter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem;">
-                        <option value="All">Select Chapter...</option>
-                        </select>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
-                <div style="flex: 1;">
-                    <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Total Questions:</label>
-                    <input type="number" id="num-questions" value="10" min="1" max="100" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;">
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-weight: bold; display: block; margin-bottom: 0.5rem;">Total Session Time (mins):</label>
-                    <input type="number" id="time-limit" value="15" min="1" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 1rem; box-sizing: border-box;">
-                </div>
-            </div>
-            
-            <button onclick="startCustomPractice()">Start Session</button>
-        </section>
-
+        <!-- ACTIVE QUIZ & RESULTS VIEWS (Hidden by default) -->
         <section id="quiz-ui" class="view">
             <div id="timer-display">Time: <span id="time">00:00</span></div>
             <div style="clear: both;"></div>
@@ -97,11 +33,7 @@
 
         <section id="pre-submit-review" class="view">
             <h2>Review Your Answers</h2>
-            <p style="color: var(--text-muted); margin-bottom: 2rem;">Please review your selections before final submission. Click "Change" to jump back to a specific question.</p>
-            
-            <div id="pre-submit-list" style="display: grid; gap: 1rem; margin-bottom: 2rem;">
-                </div>
-            
+            <div id="pre-submit-list" style="display: grid; gap: 1rem; margin-bottom: 2rem;"></div>
             <div style="display: flex; gap: 1rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
                 <button onclick="showView('quiz-ui')" style="background: var(--text-muted);">Return to Quiz</button>
                 <button onclick="calculateScore()" style="background: var(--success); font-size: 1.1rem; padding: 0.8rem 2rem;">Final Submit</button>
@@ -113,6 +45,98 @@
             <h3 id="score-display" style="font-size: 1.5rem; color: var(--primary);"></h3>
             <div id="review-container" style="margin-top: 2rem;"></div>
             <button onclick="showView('home')" style="margin-top: 2rem;">Return to Home</button>
+        </section>
+
+        <section id="practice-setup" class="view">
+            <h2>Setup Custom Practice</h2>
+            <div style="margin: 2rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div><label>Exam:</label><select id="exam-filter"><option value="All">Select Exam...</option></select></div>
+                <div><label>Part:</label><select id="part-filter"><option value="All">Select Part...</option></select></div>
+                <div><label>Category:</label><select id="category-filter"><option value="All">Select Category...</option></select></div>
+                <div><label>Chapter:</label><select id="chapter-filter"><option value="All">Select Chapter...</option></select></div>
+            </div>
+            <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
+                <div style="flex: 1;"><label>Total Questions:</label><input type="number" id="num-questions" value="10" min="1"></div>
+                <div style="flex: 1;"><label>Total Session Time (mins):</label><input type="number" id="time-limit" value="15" min="1"></div>
+            </div>
+            <button onclick="startCustomPractice()">Start Session</button>
+        </section>
+
+        <section id="loading" class="view" style="text-align: center; padding: 4rem 0;">
+            <h2 id="loading-text">Connecting to Engine...</h2>
+        </section>
+
+        <!-- THE NEW DAILY DASHBOARD (Home View) -->
+        <section id="home" class="view active">
+            <div class="hero-section">
+                <h2>Master Chemistry Every Day</h2>
+                <p>Engage your mind with daily puzzles, facts, and crowdsourced practice problems.</p>
+            </div>
+
+            <div class="dashboard-grid">
+                
+                <!-- LEFT COLUMN: WORDLE -->
+                <div class="dash-widget widget-dark">
+                    <h3>Chem-Wordle</h3>
+                    <div id="wordle-grid"></div>
+                    <div class="keyboard" id="keyboard"></div>
+                    <p id="wordle-msg" style="text-align: center; font-weight: bold; min-height: 24px; margin: 10px 0;"></p>
+                    
+                    <div class="how-to-play">
+                        <h4>How To Play</h4>
+                        <p>Guess the Wordle in 6 tries.</p>
+                        <ul>
+                            <li>Each guess must be a valid chemistry or English word.</li>
+                            <li>The color of the tiles will change to show how close your guess was.</li>
+                        </ul>
+                        <p><strong>Examples</strong></p>
+                        <div class="htp-row">
+                            <span class="htp-box correct">A</span><span class="htp-box">M</span><span class="htp-box">I</span><span class="htp-box">N</span><span class="htp-box">E</span>
+                        </div>
+                        <p><strong>A</strong> is in the word and in the correct spot.</p>
+                        
+                        <div class="htp-row">
+                            <span class="htp-box">P</span><span class="htp-box present">H</span><span class="htp-box">A</span><span class="htp-box">S</span><span class="htp-box">E</span>
+                        </div>
+                        <p><strong>H</strong> is in the word but in the wrong spot.</p>
+                        
+                        <div class="htp-row">
+                            <span class="htp-box">A</span><span class="htp-box">R</span><span class="htp-box">G</span><span class="htp-box absent">O</span><span class="htp-box">N</span>
+                        </div>
+                        <p><strong>O</strong> is not in the word in any spot.</p>
+                    </div>
+                </div>
+
+                <!-- CENTER COLUMN: DAILY 5 -->
+                <div class="dash-widget" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(145deg, #f8fafc, #e2e8f0); border: 1px solid #cbd5e1;">
+                    <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--primary);">The Daily 5</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Test your knowledge with 5 newly curated questions covering Organic, Inorganic, Physical, and Aptitude.</p>
+                    <button onclick="startDaily5()" style="font-size: 1.2rem; padding: 1rem 2rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);">Start Today's Challenge</button>
+                </div>
+
+                <!-- RIGHT COLUMN: CROSSWORD -->
+                <div class="dash-widget">
+                    <h3>Mini Crossword</h3>
+                    <div id="crossword-container">
+                        <div id="crossword-grid"></div>
+                    </div>
+                    <div class="cw-clues">
+                        <p id="crossword-across"></p>
+                        <p id="crossword-down"></p>
+                    </div>
+                    <button onclick="checkCrossword()" style="width: 100%; margin-top: 1rem;">Check Answers</button>
+                </div>
+
+            </div>
+
+            <!-- BOTTOM: DID YOU KNOW? -->
+            <div class="fact-widget">
+                <div class="fact-icon">💡</div>
+                <div>
+                    <h4 style="margin: 0 0 0.25rem 0; color: #0284c7;">Chemistry Around You</h4>
+                    <p id="daily-fact" style="margin: 0; font-size: 1rem; color: #334155;"></p>
+                </div>
+            </div>
         </section>
     </main>
 
