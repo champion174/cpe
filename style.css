@@ -455,40 +455,41 @@ main {
 #crossword-container { 
     filter: drop-shadow(4px 4px 8px rgba(0,0,0,0.15)); 
     display: flex; justify-content: center; overflow-x: auto; 
-    padding: 15px; background: white; border-radius: 8px;
+    padding: 20px; background: white; border-radius: 8px;
 }
 
 #crossword-grid { 
     display: grid; gap: 0px; width: fit-content; 
-    /* Add padding to prevent the overlapping borders from getting cut off at the top/left edge */
-    padding-top: 1px; padding-left: 1px; 
 }
 
-/* The wrapper dictates the perfect mathematical 40x40 grid */
+/* 1. The wrapper locks the grid spacing to exactly 40x40 */
 .cw-wrapper { 
     position: relative; width: 40px; height: 40px; background: transparent; 
 }
 
-/* The cell is absolutely positioned to overlap borders WITHOUT pushing the grid out of alignment */
+/* 2. The cell is 41x41. It overlaps its right & bottom neighbor flawlessly */
 .cw-cell { 
-    position: absolute; top: -1px; left: -1px; 
-    width: 41px; height: 41px; /* 40px + 1px to overlap the right and bottom neighbors */
+    position: absolute; top: 0; left: 0; 
+    width: 41px; height: 41px; 
     background: white; text-align: center; font-size: 1.3rem; font-family: sans-serif; 
     border: 1px solid #0f172a; 
-    text-transform: uppercase; padding: 0; margin: 0; box-sizing: border-box; cursor: pointer; 
+    border-radius: 0;            /* Strips hidden browser curves */
+    appearance: none;            /* Strips default browser input styling */
+    -webkit-appearance: none;    /* Strips iOS/Safari specific styling */
+    text-transform: uppercase; padding: 0; margin: 0; box-sizing: border-box; cursor: text; 
+    z-index: 1; 
 }
 
 .cw-cell:focus { 
     outline: none; background: #bde0fe; 
-    z-index: 10; 
+    z-index: 10; /* Pops the focused box above the overlapping borders */
 }
 
 .cw-num { 
-    position: absolute; top: 1px; left: 3px; font-size: 0.65rem; 
+    position: absolute; top: 2px; left: 3px; font-size: 0.65rem; 
     font-weight: bold; color: black; pointer-events: none; z-index: 5; 
 }
 
-/* Empty cells are just blank wrappers */
 .cw-empty { background: transparent; }
 
 .cw-clues-container { max-width: 400px; width: 100%; }
