@@ -18,7 +18,85 @@
     </header>
 
     <main>
-        <!-- ACTIVE QUIZ & RESULTS VIEWS (Hidden by default) -->
+        <section id="loading" class="view" style="text-align: center; padding: 4rem 0;">
+            <h2 id="loading-text">Connecting to Engine...</h2>
+        </section>
+
+        <section id="home" class="view active">
+            <div class="hero-section">
+                <h2>Master Chemistry Every Day</h2>
+                <p>Engage your mind with daily puzzles, facts, and crowdsourced practice problems.</p>
+            </div>
+
+            <div class="launcher-grid">
+                
+                <div class="launcher-card">
+                    <div class="launcher-icon">🟩🟨⬜</div>
+                    <h3>Chem-Wordle</h3>
+                    <p>Can you guess today's chemistry vocabulary word in 6 tries?</p>
+                    <button class="launcher-btn" onclick="showView('wordle-view')">Play Wordle</button>
+                </div>
+
+                <div class="launcher-card featured-card">
+                    <div class="launcher-icon">⭐</div>
+                    <h3>The Daily 5</h3>
+                    <p>Test your knowledge with 5 newly curated questions across all subjects.</p>
+                    <button class="launcher-btn featured-btn" onclick="startDaily5()">Start Challenge</button>
+                </div>
+
+                <div class="launcher-card">
+                    <div class="launcher-icon">📝</div>
+                    <h3>Mini Crossword</h3>
+                    <p>Solve today's interlocking clues to reveal the hidden chemistry terms.</p>
+                    <button class="launcher-btn" onclick="showView('crossword-view')">Play Crossword</button>
+                </div>
+
+            </div>
+
+            <div class="fact-widget">
+                <div class="fact-icon">💡</div>
+                <div>
+                    <h4 style="margin: 0 0 0.25rem 0; color: #0284c7;">Chemistry Around You</h4>
+                    <p id="daily-fact" style="margin: 0; font-size: 1rem; color: #334155;"></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="wordle-view" class="view">
+            <button class="back-link" onclick="showView('home')">← Back to Dashboard</button>
+            <div class="dedicated-game-container dark-theme">
+                <h2>Chem-Wordle</h2>
+                <div id="wordle-grid"></div>
+                <div class="keyboard" id="keyboard"></div>
+                <p id="wordle-msg" style="text-align: center; font-weight: bold; min-height: 24px; margin-top: 1rem;"></p>
+            </div>
+        </section>
+
+        <section id="crossword-view" class="view">
+            <button class="back-link" onclick="showView('home')">← Back to Dashboard</button>
+            <div class="dedicated-game-container light-theme">
+                <h2>Mini Crossword</h2>
+                
+                <div style="display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem;">
+                    <div id="crossword-container">
+                        <div id="crossword-grid"></div>
+                    </div>
+                    
+                    <div class="cw-clues-container">
+                        <div class="clue-box">
+                            <h4>Across</h4>
+                            <div id="crossword-across" class="cw-clues-text"></div>
+                        </div>
+                        <div class="clue-box">
+                            <h4>Down</h4>
+                            <div id="crossword-down" class="cw-clues-text"></div>
+                        </div>
+                        <button onclick="checkCrossword()" style="width: 100%; margin-top: 1rem; padding: 0.8rem;">Check Answers</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="quiz-ui" class="view">
             <div id="timer-display">Time: <span id="time">00:00</span></div>
             <div style="clear: both;"></div>
@@ -44,7 +122,7 @@
             <h2>Session Complete</h2>
             <h3 id="score-display" style="font-size: 1.5rem; color: var(--primary);"></h3>
             <div id="review-container" style="margin-top: 2rem;"></div>
-            <button onclick="showView('home')" style="margin-top: 2rem;">Return to Home</button>
+            <button onclick="showView('home')" style="margin-top: 2rem;">Return to Dashboard</button>
         </section>
 
         <section id="practice-setup" class="view">
@@ -62,82 +140,6 @@
             <button onclick="startCustomPractice()">Start Session</button>
         </section>
 
-        <section id="loading" class="view" style="text-align: center; padding: 4rem 0;">
-            <h2 id="loading-text">Connecting to Engine...</h2>
-        </section>
-
-        <!-- THE NEW DAILY DASHBOARD (Home View) -->
-        <section id="home" class="view active">
-            <div class="hero-section">
-                <h2>Master Chemistry Every Day</h2>
-                <p>Engage your mind with daily puzzles, facts, and crowdsourced practice problems.</p>
-            </div>
-
-            <div class="dashboard-grid">
-                
-                <!-- LEFT COLUMN: WORDLE -->
-                <div class="dash-widget widget-dark">
-                    <h3>Chem-Wordle</h3>
-                    <div id="wordle-grid"></div>
-                    <div class="keyboard" id="keyboard"></div>
-                    <p id="wordle-msg" style="text-align: center; font-weight: bold; min-height: 24px; margin: 10px 0;"></p>
-                    
-                    <div class="how-to-play">
-                        <h4>How To Play</h4>
-                        <p>Guess the Wordle in 6 tries.</p>
-                        <ul>
-                            <li>Each guess must be a valid chemistry or English word.</li>
-                            <li>The color of the tiles will change to show how close your guess was.</li>
-                        </ul>
-                        <p><strong>Examples</strong></p>
-                        <div class="htp-row">
-                            <span class="htp-box correct">A</span><span class="htp-box">M</span><span class="htp-box">I</span><span class="htp-box">N</span><span class="htp-box">E</span>
-                        </div>
-                        <p><strong>A</strong> is in the word and in the correct spot.</p>
-                        
-                        <div class="htp-row">
-                            <span class="htp-box">P</span><span class="htp-box present">H</span><span class="htp-box">A</span><span class="htp-box">S</span><span class="htp-box">E</span>
-                        </div>
-                        <p><strong>H</strong> is in the word but in the wrong spot.</p>
-                        
-                        <div class="htp-row">
-                            <span class="htp-box">A</span><span class="htp-box">R</span><span class="htp-box">G</span><span class="htp-box absent">O</span><span class="htp-box">N</span>
-                        </div>
-                        <p><strong>O</strong> is not in the word in any spot.</p>
-                    </div>
-                </div>
-
-                <!-- CENTER COLUMN: DAILY 5 -->
-                <div class="dash-widget" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(145deg, #f8fafc, #e2e8f0); border: 1px solid #cbd5e1;">
-                    <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--primary);">The Daily 5</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Test your knowledge with 5 newly curated questions covering Organic, Inorganic, Physical, and Aptitude.</p>
-                    <button onclick="startDaily5()" style="font-size: 1.2rem; padding: 1rem 2rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);">Start Today's Challenge</button>
-                </div>
-
-                <!-- RIGHT COLUMN: CROSSWORD -->
-                <div class="dash-widget">
-                    <h3>Mini Crossword</h3>
-                    <div id="crossword-container">
-                        <div id="crossword-grid"></div>
-                    </div>
-                    <div class="cw-clues">
-                        <p id="crossword-across"></p>
-                        <p id="crossword-down"></p>
-                    </div>
-                    <button onclick="checkCrossword()" style="width: 100%; margin-top: 1rem;">Check Answers</button>
-                </div>
-
-            </div>
-
-            <!-- BOTTOM: DID YOU KNOW? -->
-            <div class="fact-widget">
-                <div class="fact-icon">💡</div>
-                <div>
-                    <h4 style="margin: 0 0 0.25rem 0; color: #0284c7;">Chemistry Around You</h4>
-                    <p id="daily-fact" style="margin: 0; font-size: 1rem; color: #334155;"></p>
-                </div>
-            </div>
-        </section>
     </main>
 
     <script src="script.js"></script>
