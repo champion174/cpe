@@ -11,7 +11,22 @@ let currentQuestionIndex = 0;
 let timerInterval;
 let timeLeftRemaining = 0;
 let chapterMetadata = {}; 
-let examMetadata = {}; // THE FIX: New variable to store the Exam -> Part mapping
+let examMetadata = {}; 
+
+// Game State Variables
+let targetWordle = "";
+let wRow = 0, wTile = 0, wGuesses = [[],[],[],[],[],[]];
+let wordLength = 5;
+let cwAnswersMap = {};
+
+// Daily Facts Array (Add as many as you want here!)
+const chemistryFacts = [
+    "Glass is actually a liquid, it just flows very, very slowly.",
+    "Every hydrogen atom in your body is likely 13.5 billion years old, created at the birth of the universe.",
+    "A rubber tire is actually one single, giant molecule consisting of cross-linked polymers.",
+    "If you pour a handful of salt into a full glass of water, the water level will actually go down, not up.",
+    "Oxygen gas is colorless, but in its liquid and solid forms, it is a pale blue."
+];
 
 // --- CORE HELPERS ---
 function getCol(rowObj, targetName) {
@@ -34,32 +49,42 @@ function parseContent(text, customMaxWidth = '250px') {
     return cleanText;
 }
 
-// --- INITIALIZATION & DROPDOWNS ---
+// --- INITIALIZATION ---
 window.onload = async () => {
     try {
+        // 1. Fetch Metadata (Dropdowns)
         let response = await fetch(API_URL + "?mode=metadata");
         let data = await response.json(); 
-        
-        // Store the maps
         chapterMetadata = data.categoryMap; 
         examMetadata = data.examMap; 
         
         let examSelect = document.getElementById('exam-filter');
         data.exams.sort().forEach(ex => examSelect.innerHTML += `<option value="${ex}">${ex}</option>`);
-        
         let catSelect = document.getElementById('category-filter');
         data.categories.sort().forEach(cat => catSelect.innerHTML += `<option value="${cat}">${cat}</option>`);
         
-        // THE FIX: Add an event listener to the Exam dropdown
         document.getElementById('exam-filter').addEventListener('change', updatePartDropdown);
         document.getElementById('category-filter').addEventListener('change', updateChapterDropdown);
-        
-        // Initialize dropdowns
         updatePartDropdown();
         updateChapterDropdown(); 
-        showView('home'); 
+
+        // 2. Fetch Minigames Data
+        let gamesResponse = await fetch(API_URL + "?mode=minigames");
+        let gamesData = await gamesResponse.json();
+        
+        // Initialize Daily Fact based on day index
+        let today = new Date();
+        let epoch = new Date("2026-01-01T00:00:00+05:30"); 
+        let dayIndex = Math.floor(Math.abs(today - epoch) / (1000 * 60 * 60 * 24));
+        document.getElementById('daily-fact').innerText = chemistryFacts[dayIndex % chemistryFacts.length];
+
+        // Initialize Games
+        if(gamesData.wordle) initWordle(gamesData.wordle);
+        if(gamesData.crossword) initCrossword(gamesData.crossword);
+
     } catch (err) {
-        document.getElementById('loading').innerHTML = "<h2>Error connecting to engine. Please refresh.</h2>";
+        console.log(err);
+        document.getElementById('loading-text').innerHTML = "Error connecting to engine. Please refresh.";
     }
 };
 
@@ -358,4 +383,208 @@ function calculateScore() {
     document.getElementById('score-display').innerText = `You scored ${score} out of ${currentQuizData.length}`;
     document.getElementById('review-container').innerHTML = reviewHTML;
     showView('results');
+}
+
+// ==========================================
+// GAME LOGIC: WORDLE
+// ==========================================
+function initWordle(word) {
+    targetWordle = String(word).trim().toUpperCase();
+    wordLength = targetWordle.length;
+    
+    const grid = document.getElementById('wordle-grid');
+    grid.innerHTML = '';
+    
+    for(let r=0; r<6; r++) {
+        let row = document.createElement('div');
+        row.className = 'wordle-row';
+        row.style.gridTemplateColumns = `repeat(${wordLength}, 1fr)`; 
+        for(let c=0; c<wordLength; c++) {
+            let box = document.createElement('div');
+            box.className = 'wordle-box';
+            box.id = `box-${r}-${c}`;
+            row.appendChild(box);
+        }
+        grid.appendChild(row);
+    }
+
+    const kb = document.getElementById('keyboard');
+    kb.innerHTML = '';
+    const layout = ['QWERTYUIOP', 'ASDFGHJKL', 'ENTER,Z,X,C,V,B,N,M,BACK'];
+    layout.forEach(r => {
+        let row = document.createElement('div');
+        row.className = 'kb-row';
+        r.split(r.includes(',') ? ',' : '').forEach(key => {
+            let btn = document.createElement('button');
+            btn.className = 'kb-key' + (key.length > 1 ? ' large' : '');
+            btn.id = `key-${key}`;
+            btn.innerText = key === 'BACK' ? '⌫' : key;
+            btn.onclick = () => handleKeyPress(key === 'BACK' ? 'Backspace' : key === 'ENTER' ? 'Enter' : key);
+            row.appendChild(btn);
+        });
+        kb.appendChild(row);
+    });
+
+    // Add global listener only once
+    if(!window.wordleListenerAdded) {
+        document.addEventListener('keydown', (e) => {
+            if(!document.getElementById('home').classList.contains('active') || document.activeElement.tagName === 'INPUT') return;
+            handleKeyPress(e.key);
+        });
+        window.wordleListenerAdded = true;
+    }
+}
+
+function handleKeyPress(key) {
+    if (key === 'Enter' || key === 'ENTER') {
+        if (wTile === wordLength) submitWordle();
+    } else if (key === 'Backspace' || key === 'BACK') {
+        if (wTile > 0) { 
+            wTile--; wGuesses[wRow][wTile] = ''; 
+            let box = document.getElementById(`box-${wRow}-${wTile}`);
+            box.innerText = ''; 
+            box.classList.remove('box-filled');
+        }
+    } else if (/^[a-zA-Z]$/.test(key) && wTile < wordLength && wRow < 6) {
+        let l = key.toUpperCase();
+        wGuesses[wRow][wTile] = l;
+        let box = document.getElementById(`box-${wRow}-${wTile}`);
+        box.innerText = l;
+        box.classList.add('box-filled');
+        wTile++;
+    }
+}
+
+function submitWordle() {
+    let guess = wGuesses[wRow].join('');
+    let targetArr = targetWordle.split('');
+    let resultClasses = [];
+
+    for (let i = 0; i < wordLength; i++) {
+        let l = wGuesses[wRow][i];
+        if (l === targetArr[i]) {
+            resultClasses[i] = 'box-correct';
+            targetArr[i] = null; 
+            updateKeyState(l, '#538d4e');
+        }
+    }
+    for (let i = 0; i < wordLength; i++) {
+        let l = wGuesses[wRow][i];
+        if (!resultClasses[i]) {
+            if (targetArr.includes(l)) {
+                resultClasses[i] = 'box-present';
+                targetArr[targetArr.indexOf(l)] = null;
+                updateKeyState(l, '#b59f3b', '#538d4e');
+            } else {
+                resultClasses[i] = 'box-absent';
+                updateKeyState(l, '#3a3a3c', '#538d4e', '#b59f3b');
+            }
+        }
+    }
+
+    let animStaggerDelay = Math.min(250, 1500 / wordLength);
+
+    for (let i = 0; i < wordLength; i++) {
+        let box = document.getElementById(`box-${wRow}-${i}`);
+        setTimeout(() => {
+            box.style.transform = 'rotateX(90deg)'; 
+            setTimeout(() => {
+                box.classList.add(resultClasses[i]); 
+                box.style.transform = 'rotateX(0deg)'; 
+                
+                if (i === wordLength - 1) {
+                    if (guess === targetWordle) { document.getElementById('wordle-msg').innerText = "Genius!"; document.getElementById('wordle-msg').style.color = "#538d4e"; } 
+                    else { wRow++; wTile = 0; if (wRow === 6) document.getElementById('wordle-msg').innerText = targetWordle; }
+                }
+            }, 250);
+        }, i * animStaggerDelay); 
+    }
+}
+
+function updateKeyState(letter, newColor, blockColor1, blockColor2) {
+    setTimeout(() => { 
+        let keyBtn = document.getElementById(`key-${letter}`);
+        if(keyBtn) {
+            let currentBg = keyBtn.style.background;
+            if (currentBg !== blockColor1 && currentBg !== blockColor2) {
+                keyBtn.style.background = newColor;
+            }
+        }
+    }, 1500); 
+}
+
+// ==========================================
+// GAME LOGIC: CROSSWORD
+// ==========================================
+function initCrossword(cwData) {
+    document.getElementById('crossword-across').innerHTML = cwData.across;
+    document.getElementById('crossword-down').innerHTML = cwData.down;
+
+    let maxRow = 0, maxCol = 0;
+    cwAnswersMap = {};
+    let cells = String(cwData.grid).split('|').map(s => s.trim());
+    
+    cells.forEach(c => {
+        let parts = c.split(',');
+        if(parts.length >= 3) {
+            let r = parseInt(parts[0]), col = parseInt(parts[1]), letter = parts[2].toUpperCase();
+            let num = parts[3] ? parts[3] : null;
+            cwAnswersMap[`${r}-${col}`] = { letter: letter, num: num };
+            if(r > maxRow) maxRow = r;
+            if(col > maxCol) maxCol = col;
+        }
+    });
+
+    const grid = document.getElementById('crossword-grid');
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = `repeat(${maxCol + 1}, 35px)`;
+    grid.style.gridTemplateRows = `repeat(${maxRow + 1}, 35px)`;
+
+    for(let r=0; r <= maxRow; r++) {
+        for(let c=0; c <= maxCol; c++) {
+            let wrapper = document.createElement('div');
+            wrapper.className = 'cw-wrapper';
+            
+            if (cwAnswersMap[`${r}-${c}`]) {
+                let data = cwAnswersMap[`${r}-${c}`];
+                if (data.num) wrapper.innerHTML += `<span class="cw-num">${data.num}</span>`;
+                
+                let input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.className = 'cw-cell';
+                input.id = `cw-${r}-${c}`;
+                wrapper.appendChild(input);
+            } else {
+                wrapper.classList.add('cw-empty');
+            }
+            grid.appendChild(wrapper);
+        }
+    }
+
+    document.querySelectorAll('.cw-cell').forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.length === 1) {
+                let inputs = Array.from(document.querySelectorAll('.cw-cell'));
+                let index = inputs.indexOf(this);
+                if (index > -1 && index < inputs.length - 1) inputs[index + 1].focus();
+            }
+        });
+    });
+}
+
+function checkCrossword() {
+    for (let coord in cwAnswersMap) {
+        let cell = document.getElementById(`cw-${coord}`);
+        if(cell) {
+            let userLetter = cell.value.toUpperCase();
+            cell.style.background = 'white'; 
+            cell.style.color = 'black';
+            if (userLetter === cwAnswersMap[coord].letter) {
+                cell.style.background = '#dcfce7'; 
+            } else if (userLetter !== '') {
+                cell.style.background = '#fee2e2'; 
+            }
+        }
+    }
 }
