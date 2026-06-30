@@ -19,15 +19,6 @@ let wRow = 0, wTile = 0, wGuesses = [[],[],[],[],[],[]];
 let wordLength = 5;
 let cwAnswersMap = {};
 
-// Daily Facts Array (Add as many as you want here!)
-const chemistryFacts = [
-    "Glass is actually a liquid, it just flows very, very slowly.",
-    "Every hydrogen atom in your body is likely 13.5 billion years old, created at the birth of the universe.",
-    "A rubber tire is actually one single, giant molecule consisting of cross-linked polymers.",
-    "If you pour a handful of salt into a full glass of water, the water level will actually go down, not up.",
-    "Oxygen gas is colorless, but in its liquid and solid forms, it is a pale blue."
-];
-
 // --- CORE HELPERS ---
 function getCol(rowObj, targetName) {
     if (rowObj[targetName] !== undefined && rowObj[targetName] !== '') return rowObj[targetName];
@@ -73,10 +64,16 @@ window.onload = async () => {
         let gamesData = await gamesResponse.json();
         
         // Initialize Daily Fact based on day index
-        let today = new Date();
-        let epoch = new Date("2026-01-01T00:00:00+05:30"); 
-        let dayIndex = Math.floor(Math.abs(today - epoch) / (1000 * 60 * 60 * 24));
-        document.getElementById('daily-fact').innerText = chemistryFacts[dayIndex % chemistryFacts.length];
+        // 2. Fetch Minigames Data (Includes Wordle, Crossword, and Facts)
+        let gamesResponse = await fetch(API_URL + "?mode=minigames");
+        let gamesData = await gamesResponse.json();
+        
+        // Inject Daily Fact directly from Google Sheets
+        if(gamesData.fact) {
+            document.getElementById('daily-fact').innerText = gamesData.fact;
+        } else {
+            document.getElementById('daily-fact').innerText = "Chemistry is the central science!";
+        }
 
         // Initialize Games
         if(gamesData.wordle) initWordle(gamesData.wordle);
