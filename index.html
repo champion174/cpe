@@ -18,18 +18,22 @@
     </header>
 
     <main>
+        <!-- LOADING SCREEN -->
         <section id="loading" class="view" style="text-align: center; padding: 4rem 0;">
             <h2 id="loading-text">Connecting to Engine...</h2>
         </section>
 
+        <!-- THE NEW CLEAN HOME DASHBOARD -->
         <section id="home" class="view active">
             <div class="hero-section">
                 <h2>Master Chemistry Every Day</h2>
                 <p>Engage your mind with daily puzzles, facts, and crowdsourced practice problems.</p>
             </div>
 
+            <!-- Launcher Cards -->
             <div class="launcher-grid">
                 
+                <!-- Wordle Launcher -->
                 <div class="launcher-card">
                     <div class="launcher-icon">🟩🟨⬜</div>
                     <h3>Chem-Wordle</h3>
@@ -37,6 +41,7 @@
                     <button class="launcher-btn" onclick="showView('wordle-view')">Play Wordle</button>
                 </div>
 
+                <!-- Daily 5 Launcher (Featured) -->
                 <div class="launcher-card featured-card">
                     <div class="launcher-icon">⭐</div>
                     <h3>The Daily 5</h3>
@@ -44,15 +49,21 @@
                     <button class="launcher-btn featured-btn" onclick="startDaily5()">Start Challenge</button>
                 </div>
 
+                <!-- Chem-Cross Launcher -->
                 <div class="launcher-card">
-                    <div class="launcher-icon">📝</div>
-                    <h3>Mini Crossword</h3>
+                    <div class="cw-mini-icon">
+                        <div class="cw-mini-box"></div><div class="cw-mini-box"></div><div class="cw-mini-empty"></div>
+                        <div class="cw-mini-empty"></div><div class="cw-mini-box"></div><div class="cw-mini-empty"></div>
+                        <div class="cw-mini-empty"></div><div class="cw-mini-box"></div><div class="cw-mini-box"></div>
+                    </div>
+                    <h3>Chem-Cross</h3>
                     <p>Solve today's interlocking clues to reveal the hidden chemistry terms.</p>
-                    <button class="launcher-btn" onclick="showView('crossword-view')">Play Crossword</button>
+                    <button class="launcher-btn" onclick="showView('crossword-view')">Play Chem-Cross</button>
                 </div>
 
             </div>
 
+            <!-- Daily Fact -->
             <div class="fact-widget">
                 <div class="fact-icon">💡</div>
                 <div>
@@ -62,6 +73,7 @@
             </div>
         </section>
 
+        <!-- DEDICATED WORDLE SCREEN -->
         <section id="wordle-view" class="view">
             <button class="back-link" onclick="showView('home')">← Back to Dashboard</button>
             <div class="dedicated-game-container dark-theme">
@@ -69,19 +81,42 @@
                 <div id="wordle-grid"></div>
                 <div class="keyboard" id="keyboard"></div>
                 <p id="wordle-msg" style="text-align: center; font-weight: bold; min-height: 24px; margin-top: 1rem;"></p>
+                
+                <div class="how-to-play">
+                    <h4>How To Play</h4>
+                    <p>Guess the Wordle in 6 tries.</p>
+                    <ul>
+                        <li>Each guess must be a valid chemistry or English word.</li>
+                        <li>The color of the tiles will change to show how close your guess was.</li>
+                    </ul>
+                    <p><strong>Examples</strong></p>
+                    <div class="htp-row">
+                        <span class="htp-box correct">A</span><span class="htp-box">M</span><span class="htp-box">I</span><span class="htp-box">N</span><span class="htp-box">E</span>
+                    </div>
+                    <p><strong>A</strong> is in the word and in the correct spot.</p>
+                    
+                    <div class="htp-row">
+                        <span class="htp-box">P</span><span class="htp-box present">H</span><span class="htp-box">A</span><span class="htp-box">S</span><span class="htp-box">E</span>
+                    </div>
+                    <p><strong>H</strong> is in the word but in the wrong spot.</p>
+                    
+                    <div class="htp-row">
+                        <span class="htp-box">A</span><span class="htp-box">R</span><span class="htp-box">G</span><span class="htp-box absent">O</span><span class="htp-box">N</span>
+                    </div>
+                    <p><strong>O</strong> is not in the word in any spot.</p>
+                </div>
             </div>
         </section>
 
+        <!-- DEDICATED CHEM-CROSS SCREEN -->
         <section id="crossword-view" class="view">
             <button class="back-link" onclick="showView('home')">← Back to Dashboard</button>
             <div class="dedicated-game-container light-theme">
-                <h2>Mini Crossword</h2>
-                
+                <h2>Chem-Cross</h2>
                 <div style="display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem;">
                     <div id="crossword-container">
                         <div id="crossword-grid"></div>
                     </div>
-                    
                     <div class="cw-clues-container">
                         <div class="clue-box">
                             <h4>Across</h4>
@@ -97,6 +132,7 @@
             </div>
         </section>
 
+        <!-- STANDARD QUIZ UI -->
         <section id="quiz-ui" class="view">
             <div id="timer-display">Time: <span id="time">00:00</span></div>
             <div style="clear: both;"></div>
@@ -109,6 +145,7 @@
             </div>
         </section>
 
+        <!-- PRE-SUBMIT REVIEW -->
         <section id="pre-submit-review" class="view">
             <h2>Review Your Answers</h2>
             <div id="pre-submit-list" style="display: grid; gap: 1rem; margin-bottom: 2rem;"></div>
@@ -118,6 +155,7 @@
             </div>
         </section>
 
+        <!-- RESULTS -->
         <section id="results" class="view">
             <h2>Session Complete</h2>
             <h3 id="score-display" style="font-size: 1.5rem; color: var(--primary);"></h3>
@@ -125,19 +163,46 @@
             <button onclick="showView('home')" style="margin-top: 2rem;">Return to Dashboard</button>
         </section>
 
+        <!-- PREMIUM CUSTOM PRACTICE SETUP -->
         <section id="practice-setup" class="view">
-            <h2>Setup Custom Practice</h2>
-            <div style="margin: 2rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                <div><label>Exam:</label><select id="exam-filter"><option value="All">Select Exam...</option></select></div>
-                <div><label>Part:</label><select id="part-filter"><option value="All">Select Part...</option></select></div>
-                <div><label>Category:</label><select id="category-filter"><option value="All">Select Category...</option></select></div>
-                <div><label>Chapter:</label><select id="chapter-filter"><option value="All">Select Chapter...</option></select></div>
+            <div style="text-align: center; margin-bottom: 2.5rem;">
+                <h2>Setup Custom Practice</h2>
+                <p style="color: var(--text-muted);">Tailor your session to focus on exact chapters and formats.</p>
             </div>
-            <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
-                <div style="flex: 1;"><label>Total Questions:</label><input type="number" id="num-questions" value="10" min="1"></div>
-                <div style="flex: 1;"><label>Total Session Time (mins):</label><input type="number" id="time-limit" value="15" min="1"></div>
+            
+            <div class="premium-form-grid">
+                <div class="form-group">
+                    <label>Exam</label>
+                    <div class="select-wrapper"><select id="exam-filter"><option value="All">All Exams</option></select></div>
+                </div>
+                <div class="form-group">
+                    <label>Part</label>
+                    <div class="select-wrapper"><select id="part-filter"><option value="All">All Parts</option></select></div>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <div class="select-wrapper"><select id="category-filter"><option value="All">All Categories</option></select></div>
+                </div>
+                <div class="form-group">
+                    <label>Chapter</label>
+                    <div class="select-wrapper"><select id="chapter-filter"><option value="All">All Chapters</option></select></div>
+                </div>
             </div>
-            <button onclick="startCustomPractice()">Start Session</button>
+
+            <div class="premium-form-grid" style="border-top: 1px solid #e2e8f0; padding-top: 2rem; margin-top: 2rem;">
+                <div class="form-group">
+                    <label>Total Questions</label>
+                    <input type="number" id="num-questions" class="premium-input" value="10" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Time Limit (mins)</label>
+                    <input type="number" id="time-limit" class="premium-input" value="15" min="1">
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 3rem;">
+                <button onclick="startCustomPractice()" style="font-size: 1.2rem; padding: 1rem 3rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);">Start Session</button>
+            </div>
         </section>
 
     </main>
