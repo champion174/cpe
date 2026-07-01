@@ -20,6 +20,24 @@ body {
     line-height: 1.6;
 }
 
+/* =========================================
+   CONNECTION STATUS BANNER
+   ========================================= */
+.status-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    z-index: 1000;
+    transition: transform 0.4s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.status-connecting { background: #fef08a; color: #854d0e; }
+.status-connected { background: #dcfce7; color: #166534; }
+.status-failed { background: #fee2e2; color: #991b1b; }
+
 header {
     background: var(--surface);
     padding: 1rem 10%;
@@ -450,51 +468,42 @@ main {
 }
 
 /* =========================================
-   CHEM-CROSS SPECIFICS (Seamless Grid)
+   CHEM-CROSS SPECIFICS (Reverted to Original Prototype)
    ========================================= */
 #crossword-container { 
-    display: flex; justify-content: center; padding: 20px;
-    background: transparent;
+    filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.25)); 
+    display: inline-block; 
+    margin-bottom: 2rem; 
+    padding: 10px;
 }
 
-/* 1. Define the TOP and LEFT boundaries for the whole grid */
 #crossword-grid { 
-    display: grid; 
-    gap: 0px; 
-    width: fit-content; 
-    border-top: 1px solid #0f172a;
-    border-left: 1px solid #0f172a;
+    display: grid; gap: 0px; width: fit-content; 
 }
 
 .cw-wrapper { 
-    position: relative; width: 40px; height: 40px; 
+    position: relative; width: 40px; height: 40px; background: transparent; 
 }
 
-/* 2. Define RIGHT and BOTTOM boundaries for cells. They share lines with neighbors. */
 .cw-cell { 
-    width: 40px; height: 40px; 
-    background: white; 
+    background: white; width: 100%; height: 100%; 
     text-align: center; font-size: 1.3rem; font-family: sans-serif; 
-    border-right: 1px solid #0f172a; 
-    border-bottom: 1px solid #0f172a; 
-    border-top: none; border-left: none; /* Inherited from container or neighbor */
+    border: 1px solid #000000; /* Simple, standard border */
     text-transform: uppercase; padding: 0; margin: 0; box-sizing: border-box; cursor: text; 
 }
 
 .cw-cell:focus { 
-    outline: 2px solid var(--primary); background: #e0f2fe; z-index: 10; 
+    outline: none; background: #bde0fe; 
 }
 
 .cw-num { 
-    position: absolute; top: 1px; left: 3px; font-size: 0.65rem; 
-    font-weight: bold; color: black; pointer-events: none; z-index: 5; 
+    position: absolute; top: 2px; left: 3px; font-size: 0.65rem; 
+    font-weight: bold; color: black; pointer-events: none; 
 }
 
-/* Empty cells also need the shared right/bottom borders */
 .cw-empty { 
     background: transparent; 
-    border-right: 1px solid #0f172a; 
-    border-bottom: 1px solid #0f172a;
+    border: none; /* Crucial: no borders on empty spaces */
 }
 
 .cw-clues-container { max-width: 400px; width: 100%; }
