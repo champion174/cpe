@@ -468,7 +468,7 @@ main {
 }
 
 /* =========================================
-   CHEM-CROSS SPECIFICS (Reverted to Prototype)
+   CHEM-CROSS SPECIFICS (Absolute Lock - Prototype Style)
    ========================================= */
 #crossword-container { 
     filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.4)); 
@@ -480,30 +480,58 @@ main {
     display: grid; gap: 0px; width: fit-content; 
 }
 
+/* 1. We lock the grid wrapper to EXACTLY 45px, no exceptions */
 .cw-wrapper { 
-    position: relative; width: 45px; height: 45px; background: transparent; 
+    position: relative; 
+    width: 45px !important; 
+    height: 45px !important; 
+    background: transparent; 
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
+/* 2. We pin the input absolutely to the wrapper so it physically cannot shift */
 .cw-cell { 
-    background: white; width: 100%; height: 100%; 
-    display: block; /* FIX: Removes the invisible text baseline gap */
-    text-align: center; font-size: 1.5rem; font-family: sans-serif; 
-    border: 1px solid #000000; 
-    border-radius: 0; /* FIX: Prevents browsers from slightly rounding the corners */
-    text-transform: uppercase; padding: 0; margin: 0; box-sizing: border-box; cursor: text; 
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 45px !important; 
+    height: 45px !important; 
+    display: block !important;
+    
+    background: white; 
+    text-align: center; 
+    font-size: 1.5rem; 
+    font-family: sans-serif; 
+    
+    /* The thick prototype border */
+    border: 1px solid #000000 !important; 
+    
+    /* Strips all sneaky browser defaults that distort sizes */
+    border-radius: 0 !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    padding: 0 !important; 
+    margin: 0 !important; 
+    box-sizing: border-box !important; 
+    
+    text-transform: uppercase; 
+    cursor: text; 
+    z-index: 1;
 }
 
 .cw-cell:focus { 
     outline: none; background: #bde0fe; 
 }
 
+/* 3. Ensure numbers float safely above the input without pushing it down */
 .cw-num { 
-    position: absolute; top: 2px; left: 3px; font-size: 0.7rem; font-weight: bold; color: black; pointer-events: none; 
+    position: absolute; top: 2px; left: 3px; font-size: 0.7rem; font-weight: bold; color: black; pointer-events: none; z-index: 5; 
 }
 
 .cw-empty { 
     background: transparent; 
-    border: none; 
+    border: none !important; 
 }
 
 .cw-clues-container { max-width: 400px; width: 100%; }
