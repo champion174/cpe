@@ -468,7 +468,7 @@ main {
 }
 
 /* =========================================
-   CHEM-CROSS SPECIFICS (Absolute Lock - Prototype Style)
+   CHEM-CROSS SPECIFICS (Prototype Logic)
    ========================================= */
 #crossword-container { 
     filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.4)); 
@@ -480,53 +480,48 @@ main {
     display: grid; gap: 0px; width: fit-content; 
 }
 
-/* 1. We lock the grid wrapper to EXACTLY 45px, no exceptions */
 .cw-wrapper { 
     position: relative; 
-    width: 45px !important; 
-    height: 45px !important; 
+    width: 45px; 
+    height: 45px; 
     background: transparent; 
-    padding: 0 !important;
-    margin: 0 !important;
 }
 
-/* 2. We pin the input absolutely to the wrapper so it physically cannot shift */
 .cw-cell { 
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    background: white; 
+    
+    /* THE FIX: Hardcode exact dimensions and force block display */
     width: 45px !important; 
     height: 45px !important; 
-    display: block !important;
+    min-width: 45px !important;
+    min-height: 45px !important;
+    display: block !important; 
     
-    background: white; 
     text-align: center; 
     font-size: 1.5rem; 
     font-family: sans-serif; 
     
-    /* The thick prototype border */
+    /* The original logic for thick junctions */
     border: 1px solid #000000 !important; 
     
-    /* Strips all sneaky browser defaults that distort sizes */
+    /* Strip hidden browser styles that cause shifting */
     border-radius: 0 !important;
     appearance: none !important;
     -webkit-appearance: none !important;
+    
+    text-transform: uppercase; 
     padding: 0 !important; 
     margin: 0 !important; 
     box-sizing: border-box !important; 
-    
-    text-transform: uppercase; 
-    cursor: text; 
-    z-index: 1;
+    cursor: pointer; 
 }
 
 .cw-cell:focus { 
     outline: none; background: #bde0fe; 
 }
 
-/* 3. Ensure numbers float safely above the input without pushing it down */
 .cw-num { 
-    position: absolute; top: 2px; left: 3px; font-size: 0.7rem; font-weight: bold; color: black; pointer-events: none; z-index: 5; 
+    position: absolute; top: 2px; left: 3px; font-size: 0.7rem; font-weight: bold; color: black; pointer-events: none; 
 }
 
 .cw-empty { 
