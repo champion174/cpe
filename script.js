@@ -42,6 +42,10 @@ function parseContent(text, customMaxWidth = '250px') {
 
 // --- INITIALIZATION ---
 window.onload = async () => {
+    const statusBanner = document.getElementById('status-banner');
+    const statusText = document.getElementById('status-text');
+    const statusIcon = document.getElementById('status-icon');
+
     try {
         // 1. Fetch Metadata (Dropdowns)
         let response = await fetch(API_URL + "?mode=metadata");
@@ -74,8 +78,24 @@ window.onload = async () => {
         if(gamesData.wordle) initWordle(gamesData.wordle);
         if(gamesData.crossword) initCrossword(gamesData.crossword);
 
+        // --- SUCCESS: Update Status Banner ---
+        statusBanner.className = 'status-banner status-connected';
+        statusIcon.innerText = '✅';
+        statusText.innerText = 'Database connected successfully.';
+        
+        // Slide the banner up out of view after 2.5 seconds
+        setTimeout(() => {
+            statusBanner.style.transform = 'translateY(-100%)';
+        }, 2500);
+
     } catch (err) {
         console.log(err);
+        
+        // --- FAIL: Update Status Banner ---
+        statusBanner.className = 'status-banner status-failed';
+        statusIcon.innerText = '❌';
+        statusText.innerText = 'Connection failed. Please refresh the page.';
+        
         document.getElementById('loading-text').innerHTML = "Error connecting to engine. Please refresh.";
     }
 };
