@@ -552,8 +552,8 @@ function initCrossword(cwData) {
 
     const grid = document.getElementById('crossword-grid');
     grid.innerHTML = '';
-    grid.style.gridTemplateColumns = `repeat(${maxCol + 1}, 35px)`;
-    grid.style.gridTemplateRows = `repeat(${maxRow + 1}, 35px)`;
+    grid.style.setProperty('--cw-cols', maxCol + 1);
+    grid.style.setProperty('--cw-rows', maxRow + 1);
 
     for(let r=0; r <= maxRow; r++) {
         for(let c=0; c <= maxCol; c++) {
