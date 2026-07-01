@@ -483,6 +483,8 @@ main {
     box-sizing: border-box;
 
     /* THE FIX: Safety net forcing every explicit or implicit track to exactly 45px */
+    grid-template-columns: repeat(var(--cw-cols, 20), 45px);
+    grid-template-rows: repeat(var(--cw-rows, 20), 45px);
     grid-auto-columns: 45px;
     grid-auto-rows: 45px;
     justify-content: start;
