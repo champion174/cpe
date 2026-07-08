@@ -104,6 +104,37 @@ window.onload = async () => {
     renderMath();
 };
 
+// --- DROPDOWN HELPERS ---
+function updatePartDropdown() {
+    let exSelect = document.getElementById('exam-filter').value;
+    let ptSelect = document.getElementById('part-filter');
+    ptSelect.innerHTML = '<option value="All">Select Part...</option>';
+    
+    let partsToAdd = [];
+    if (exSelect === "All") {
+        Object.values(examMetadata).forEach(pts => partsToAdd = partsToAdd.concat(pts));
+    } else if (examMetadata[exSelect]) {
+        partsToAdd = examMetadata[exSelect];
+    }
+
+    [...new Set(partsToAdd)].sort().forEach(pt => ptSelect.innerHTML += `<option value="${pt}">${pt}</option>`);
+}
+
+function updateChapterDropdown() {
+    let catSelect = document.getElementById('category-filter').value;
+    let chapSelect = document.getElementById('chapter-filter');
+    chapSelect.innerHTML = '<option value="All">Select Chapter...</option>';
+    
+    let chaptersToAdd = [];
+    if (catSelect === "All") {
+        Object.values(chapterMetadata).forEach(chaps => chaptersToAdd = chaptersToAdd.concat(chaps));
+    } else if (chapterMetadata[catSelect]) {
+        chaptersToAdd = chapterMetadata[catSelect];
+    }
+
+    [...new Set(chaptersToAdd)].sort().forEach(chap => chapSelect.innerHTML += `<option value="${chap}">${chap}</option>`);
+}
+
 // --- ENGINE MODES ---
 function startDaily5() {
     // INSTANT START! No API fetch needed because we loaded it on initial boot.
