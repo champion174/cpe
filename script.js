@@ -135,6 +135,17 @@ function updateChapterDropdown() {
     [...new Set(chaptersToAdd)].sort().forEach(chap => chapSelect.innerHTML += `<option value="${chap}">${chap}</option>`);
 }
 
+// --- UI ROUTING ---
+function showView(viewId) {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    
+    // Clear the quiz timer if the user navigates away
+    if (typeof timerInterval !== 'undefined') {
+        clearInterval(timerInterval); 
+    }
+}
+
 // --- ENGINE MODES ---
 function startDaily5() {
     // INSTANT START! No API fetch needed because we loaded it on initial boot.
