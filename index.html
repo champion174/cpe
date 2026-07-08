@@ -33,17 +33,16 @@
         </nav>
     </header>
     <!-- NEW: Connection Status Banner -->
-    <div id="status-banner" class="status-banner status-connecting">
-        <span id="status-icon">🔄</span> <span id="status-text">Connecting to database...</span>
+    <div id="loading-overlay" class="glossy-overlay">
+        <div class="glossy-content">
+            <div class="spinner"></div>
+            <h2 id="status-text" style="margin: 0; color: #0f172a; font-size: 1.5rem;">Connecting to Database...</h2>
+            <p id="status-subtext" style="color: #64748b; margin-top: 0.5rem;">Fetching today's puzzles and challenges.</p>
+        </div>
     </div>
 
     <main>
-        <!-- LOADING SCREEN -->
-        <section id="loading" class="view" style="text-align: center; padding: 4rem 0;">
-            <h2 id="loading-text">Connecting to Engine...</h2>
-        </section>
-
-        <!-- THE NEW CLEAN HOME DASHBOARD -->
+         <!-- THE NEW CLEAN HOME DASHBOARD -->
         <section id="home" class="view active">
             <div class="hero-section">
                 <h2>Master Chemistry Every Day</h2>
