@@ -41,9 +41,16 @@ function parseContent(text, customMaxWidth = '250px') {
 }
 
 // --- MATHJAX HELPER ---
+let mathJaxPromise = Promise.resolve();
+
 function renderMath() {
-    if (window.MathJax) {
-        MathJax.typesetPromise().catch((err) => console.log('MathJax formatting failed: ', err));
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        mathJaxPromise = mathJaxPromise
+            .then(() => {
+                MathJax.typesetClear();
+                return MathJax.typesetPromise();
+            })
+            .catch((err) => console.log('MathJax formatting failed: ', err));
     }
 }
 
