@@ -40,6 +40,13 @@ function parseContent(text, customMaxWidth = '250px') {
     return cleanText;
 }
 
+// --- MATHJAX HELPER ---
+function renderMath() {
+    if (window.MathJax) {
+        MathJax.typesetPromise().catch((err) => console.log('MathJax formatting failed: ', err));
+    }
+}
+
 // --- INITIALIZATION ---
 window.onload = async () => {
     const statusBanner = document.getElementById('status-banner');
