@@ -103,8 +103,9 @@ window.onload = async () => {
         statusIcon.innerText = '❌';
         statusText.innerText = 'Connection failed. Please refresh the page.';
         
-        document.getElementById('loading-text').innerHTML = "Error connecting to engine. Please refresh.";
+        document.getElementById('ing-text').innerHTML = "Error connecting to engine. Please refresh.";
     }
+    renderMath();
 };
 
 // THE FIX: New function to dynamically filter Parts based on Exam
@@ -227,6 +228,7 @@ function renderQuestion() {
 
     document.getElementById('prev-btn').style.visibility = (currentQuestionIndex === 0) ? 'hidden' : 'visible';
     document.getElementById('next-btn').style.visibility = (currentQuestionIndex === currentQuizData.length - 1) ? 'hidden' : 'visible';
+    renderMath();
 }
 
 function selectOption(t) { userAnswers[currentQuestionIndex] = t; renderQuestion(); }
@@ -593,6 +595,7 @@ function initCrossword(cwData) {
             }
         });
     });
+    renderMath();
 }
 
 function checkCrossword() {
