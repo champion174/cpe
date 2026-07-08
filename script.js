@@ -176,6 +176,7 @@ async function startCustomPractice() {
     let queryUrl = `${API_URL}?mode=custom&exam=${encodeURIComponent(exam)}&part=${encodeURIComponent(part)}&category=${encodeURIComponent(category)}&chapter=${encodeURIComponent(chapter)}&limit=${numQuestions}`;
     let success = await fetchQuizData(queryUrl);
     if (success) startQuizEngine(timeLimitMins * 60); 
+    renderMath();
 }
 
 // --- ACTIVE QUIZ UI ---
@@ -183,6 +184,7 @@ function startQuizEngine(timeInSeconds) {
     if(currentQuizData.length === 0) { alert("No questions found for this selection."); showView('practice-setup'); return; }
     userAnswers = {}; currentQuestionIndex = 0; timeLeftRemaining = timeInSeconds;
     showView('quiz-ui'); renderQuestion(); startTimer();
+    renderMath();
 }
 
 function renderQuestion() {
@@ -196,7 +198,7 @@ function renderQuestion() {
     qHTML += `<div style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.85rem; padding: 0.25rem 0.75rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: bold;">⭐ Difficulty Rating: ${qRating}</div>`;
     
     document.getElementById('question-text').innerHTML = qHTML;
-    
+    renderMath();
     let container = document.getElementById('options-container');
     let optionsHTML = '';
     
@@ -298,12 +300,14 @@ function buildPreSubmitReview() {
     });
     
     document.getElementById('pre-submit-list').innerHTML = listHTML;
+    renderMath();
     showView('pre-submit-review');
 }
 
 function jumpToQuestion(index) {
     currentQuestionIndex = index;
     renderQuestion();
+    renderMath();
     showView('quiz-ui');
 }
 
@@ -403,6 +407,7 @@ function calculateScore() {
 
     document.getElementById('score-display').innerText = `You scored ${score} out of ${currentQuizData.length}`;
     document.getElementById('review-container').innerHTML = reviewHTML;
+    renderMath();
     showView('results');
 }
 
