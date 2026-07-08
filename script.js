@@ -6,7 +6,8 @@ const ERROR_REPORT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSdVnD1ow5Vbl
 const RATING_SUBMIT_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSclZsoWAwAYuVi4CTZYcXQvTVLA9FlBarA2QtH3QzufHDJBmQ/viewform?usp=pp_url&entry.217150825=REPLACE_ID&entry.624495279=REPLACE_RATING";
 
 let currentQuizData = [];
-let userAnswers = {}; 
+let userAnswers = {};
+let preloadedDaily5 = []; // Stores the Daily 5 instantly on load
 let currentQuestionIndex = 0;
 let timerInterval;
 let timeLeftRemaining = 0;
@@ -56,123 +57,68 @@ function renderMath() {
 
 // --- INITIALIZATION ---
 window.onload = async () => {
-    const statusBanner = document.getElementById('status-banner');
+    const overlay = document.getElementById('loading-overlay');
     const statusText = document.getElementById('status-text');
-    const statusIcon = document.getElementById('status-icon');
+    const subText = document.getElementById('status-subtext');
 
     try {
-        // 1. Fetch Metadata (Dropdowns)
-        let response = await fetch(API_URL + "?mode=metadata");
-        let data = await response.json(); 
-        chapterMetadata = data.categoryMap; 
-        examMetadata = data.examMap; 
+        // ONE SINGLE API CALL for everything!
+        let response = await fetch(API_URL + "?mode=init");
+        let payload = await response.json(); 
         
+        // 1. Setup Dropdowns
+        chapterMetadata = payload.metadata.categoryMap; 
+        examMetadata = payload.metadata.examMap; 
         let examSelect = document.getElementById('exam-filter');
-        data.exams.sort().forEach(ex => examSelect.innerHTML += `<option value="${ex}">${ex}</option>`);
+        payload.metadata.exams.sort().forEach(ex => examSelect.innerHTML += `<option value="${ex}">${ex}</option>`);
         let catSelect = document.getElementById('category-filter');
-        data.categories.sort().forEach(cat => catSelect.innerHTML += `<option value="${cat}">${cat}</option>`);
-        
+        payload.metadata.categories.sort().forEach(cat => catSelect.innerHTML += `<option value="${cat}">${cat}</option>`);
         document.getElementById('exam-filter').addEventListener('change', updatePartDropdown);
         document.getElementById('category-filter').addEventListener('change', updateChapterDropdown);
-        updatePartDropdown();
-        updateChapterDropdown(); 
+        updatePartDropdown(); updateChapterDropdown(); 
 
-        // 2. Fetch Minigames Data (Includes Wordle, Crossword, and Facts)
-        let gamesResponse = await fetch(API_URL + "?mode=minigames");
-        let gamesData = await gamesResponse.json();
+        // 2. Setup Minigames & Facts
+        if(payload.minigames.fact) document.getElementById('daily-fact').innerText = payload.minigames.fact;
+        if(payload.minigames.wordle) initWordle(payload.minigames.wordle);
+        if(payload.minigames.crossword) initCrossword(payload.minigames.crossword);
+
+        // 3. Cache the Daily 5 & Preload its images
+        preloadedDaily5 = payload.daily5;
+        preloadQuizImages(preloadedDaily5);
+
+        // SUCCESS: Hide Overlay
+        statusText.innerText = "Ready!";
+        statusText.style.color = "#166534";
+        subText.innerText = "Good luck!";
+        document.querySelector('.spinner').style.display = 'none';
         
-        // Inject Daily Fact directly from Google Sheets
-        if(gamesData.fact) {
-            document.getElementById('daily-fact').innerText = gamesData.fact;
-        } else {
-            document.getElementById('daily-fact').innerText = "Chemistry is the central science!";
-        }
-
-        // Initialize Games
-        if(gamesData.wordle) initWordle(gamesData.wordle);
-        if(gamesData.crossword) initCrossword(gamesData.crossword);
-
-        // --- SUCCESS: Update Status Banner ---
-        statusBanner.className = 'status-banner status-connected';
-        statusIcon.innerText = '✅';
-        statusText.innerText = 'Database connected successfully.';
-        
-        // Slide the banner up out of view after 2.5 seconds
-        setTimeout(() => {
-            statusBanner.style.transform = 'translateY(-100%)';
-        }, 2500);
+        setTimeout(() => { overlay.classList.add('overlay-hidden'); }, 800);
 
     } catch (err) {
         console.log(err);
-        
-        // --- FAIL: Update Status Banner ---
-        statusBanner.className = 'status-banner status-failed';
-        statusIcon.innerText = '❌';
-        statusText.innerText = 'Connection failed. Please refresh the page.';
-        
-        document.getElementById('ing-text').innerHTML = "Error connecting to engine. Please refresh.";
+        statusText.innerText = "Connection Failed";
+        statusText.style.color = "#991b1b";
+        subText.innerText = "Please refresh the page.";
+        document.querySelector('.spinner').style.display = 'none';
     }
     renderMath();
 };
 
-// THE FIX: New function to dynamically filter Parts based on Exam
-function updatePartDropdown() {
-    let exSelect = document.getElementById('exam-filter').value;
-    let ptSelect = document.getElementById('part-filter');
-    ptSelect.innerHTML = '<option value="All">Select Part...</option>';
-    
-    let partsToAdd = [];
-    if (exSelect === "All") {
-        Object.values(examMetadata).forEach(pts => partsToAdd = partsToAdd.concat(pts));
-    } else if (examMetadata[exSelect]) {
-        partsToAdd = examMetadata[exSelect];
-    }
-
-    [...new Set(partsToAdd)].sort().forEach(pt => ptSelect.innerHTML += `<option value="${pt}">${pt}</option>`);
-}
-
-function updateChapterDropdown() {
-    let catSelect = document.getElementById('category-filter').value;
-    let chapSelect = document.getElementById('chapter-filter');
-    chapSelect.innerHTML = '<option value="All">Select Chapter...</option>';
-    
-    let chaptersToAdd = [];
-    if (catSelect === "All") {
-        Object.values(chapterMetadata).forEach(chaps => chaptersToAdd = chaptersToAdd.concat(chaps));
-    } else if (chapterMetadata[catSelect]) {
-        chaptersToAdd = chapterMetadata[catSelect];
-    }
-
-    [...new Set(chaptersToAdd)].sort().forEach(chap => chapSelect.innerHTML += `<option value="${chap}">${chap}</option>`);
-}
-
-function showView(viewId) {
-    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-    document.getElementById(viewId).classList.add('active');
-    clearInterval(timerInterval); 
-}
-
-// --- SECURE DATA FETCHING ---
-async function fetchQuizData(url) {
-    document.getElementById('loading').innerHTML = "<h2>Generating your session...</h2>";
-    showView('loading'); 
-    try {
-        let response = await fetch(url);
-        currentQuizData = await response.json();
-        return true;
-    } catch (error) {
-        document.getElementById('loading').innerHTML = "<h2>Error connecting to engine.</h2>";
-        return false;
-    }
-}
-
 // --- ENGINE MODES ---
-async function startDaily5() {
-    let success = await fetchQuizData(API_URL + "?mode=daily5");
-    if (success) startQuizEngine(300); 
+function startDaily5() {
+    // INSTANT START! No API fetch needed because we loaded it on initial boot.
+    currentQuizData = preloadedDaily5;
+    startQuizEngine(300); 
 }
 
 async function startCustomPractice() {
+    // We still have to fetch Custom Practice because we don't know what they will select
+    const overlay = document.getElementById('loading-overlay');
+    document.getElementById('status-text').innerText = "Generating Session...";
+    document.getElementById('status-subtext').innerText = "Compiling your custom question bank.";
+    document.querySelector('.spinner').style.display = 'block';
+    overlay.classList.remove('overlay-hidden');
+
     let exam = document.getElementById('exam-filter').value;
     let part = document.getElementById('part-filter').value;
     let category = document.getElementById('category-filter').value;
@@ -181,9 +127,28 @@ async function startCustomPractice() {
     let timeLimitMins = document.getElementById('time-limit').value;
 
     let queryUrl = `${API_URL}?mode=custom&exam=${encodeURIComponent(exam)}&part=${encodeURIComponent(part)}&category=${encodeURIComponent(category)}&chapter=${encodeURIComponent(chapter)}&limit=${numQuestions}`;
-    let success = await fetchQuizData(queryUrl);
-    if (success) startQuizEngine(timeLimitMins * 60); 
-    renderMath();
+    
+    try {
+        let response = await fetch(queryUrl);
+        currentQuizData = await response.json();
+        preloadQuizImages(currentQuizData); // Preload images to prevent lag during the quiz
+        overlay.classList.add('overlay-hidden');
+        startQuizEngine(timeLimitMins * 60); 
+    } catch (error) {
+        document.getElementById('status-text').innerText = "Error generating session.";
+        document.querySelector('.spinner').style.display = 'none';
+    }
+}
+
+// --- INVISIBLE IMAGE PRELOADER ---
+function preloadQuizImages(quizDataArray) {
+    quizDataArray.forEach(q => {
+        let imgUrl = getCol(q, 'Image URL');
+        if (imgUrl && imgUrl.trim() !== '') {
+            const img = new Image();
+            img.src = imgUrl.trim(); // Forces browser to download the image silently in the background
+        }
+    });
 }
 
 // --- ACTIVE QUIZ UI ---
