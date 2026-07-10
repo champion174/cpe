@@ -154,6 +154,14 @@ function startDaily5() {
 }
 
 async function startCustomPractice() {
+    let numQuestions = document.getElementById('num-questions').value;
+    
+    // NEW: Frontend Warning
+    if (numQuestions > 200) {
+        alert("Maximum limit is 200 questions.");
+        document.getElementById('num-questions').value = 200;
+        numQuestions = 200;
+    }
     // We still have to fetch Custom Practice because we don't know what they will select
     const overlay = document.getElementById('loading-overlay');
     document.getElementById('status-text').innerText = "Generating Session...";
