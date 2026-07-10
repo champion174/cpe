@@ -154,14 +154,6 @@ function startDaily5() {
 }
 
 async function startCustomPractice() {
-    let numQuestions = document.getElementById('num-questions').value;
-    
-    // NEW: Frontend Warning
-    if (numQuestions > 200) {
-        alert("Maximum limit is 200 questions.");
-        document.getElementById('num-questions').value = 200;
-        numQuestions = 200;
-    }
     // We still have to fetch Custom Practice because we don't know what they will select
     const overlay = document.getElementById('loading-overlay');
     document.getElementById('status-text').innerText = "Generating Session...";
@@ -177,6 +169,13 @@ async function startCustomPractice() {
     let timeLimitMins = document.getElementById('time-limit').value;
 
     let queryUrl = `${API_URL}?mode=custom&exam=${encodeURIComponent(exam)}&part=${encodeURIComponent(part)}&category=${encodeURIComponent(category)}&chapter=${encodeURIComponent(chapter)}&limit=${numQuestions}`;
+
+    // NEW: Frontend Warning
+    if (numQuestions > 200) {
+        alert("Maximum limit is 200 questions.");
+        document.getElementById('num-questions').value = 200;
+        numQuestions = 200;
+    }
     
     try {
         let response = await fetch(queryUrl);
