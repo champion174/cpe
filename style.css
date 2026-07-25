@@ -597,7 +597,19 @@ main {
 .htp-box.correct { background: #538d4e; border-color: #538d4e; }
 .htp-box.present { background: #b59f3b; border-color: #b59f3b; }
 .htp-box.absent { background: #3a3a3c; border-color: #3a3a3c; }
-.container { /* or whatever class holds your main dashboard */
-    background: rgba(255, 255, 255, 0.85); /* Semi-transparent white */
-    backdrop-filter: blur(10px); /* Gives it a frosty glass look */
+.container {
+    /* 1. The Semi-Transparent Base */
+    background: rgba(15, 23, 42, 0.6); /* Deep slate color at 60% opacity */
+    
+    /* 2. The Frosted Glass Blur */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px); /* For Safari support */
+    
+    /* 3. The Structural Edge */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Very subtle white outline */
+    border-radius: 16px; /* Smooth, modern corners */
+    
+    /* 4. Depth & Readability */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); 
+    color: #e2e8f0; /* Changes your main text to a soft, readable off-white */
 }
