@@ -597,3 +597,7 @@ main {
 .htp-box.correct { background: #538d4e; border-color: #538d4e; }
 .htp-box.present { background: #b59f3b; border-color: #b59f3b; }
 .htp-box.absent { background: #3a3a3c; border-color: #3a3a3c; }
+.container { /* or whatever class holds your main dashboard */
+    background: rgba(255, 255, 255, 0.85); /* Semi-transparent white */
+    backdrop-filter: blur(10px); /* Gives it a frosty glass look */
+}
