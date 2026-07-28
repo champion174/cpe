@@ -147,16 +147,38 @@
             </div>
         </section>
 
-        <!-- STANDARD QUIZ UI -->
+      <!-- PREMIUM 2-COLUMN QUIZ UI -->
         <section id="quiz-ui" class="view">
-            <div id="timer-display">Time: <span id="time">00:00</span></div>
-            <div style="clear: both;"></div>
-            <div id="question-text"></div>
-            <div id="options-container"></div>
-            <div class="quiz-controls">
-                <button id="prev-btn" onclick="prevQuestion()" style="background: var(--text-muted);">← Previous</button>
-                <button id="next-btn" onclick="nextQuestion()" style="background: var(--text-muted);">Next →</button>
-                <button onclick="buildPreSubmitReview()">Review & Submit</button>
+            <div class="quiz-layout" style="display: flex; gap: 3rem; align-items: flex-start;">
+                
+                <!-- Left Column: The Question Area -->
+                <div class="question-area" style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <span id="question-counter" style="color: #64748b; font-weight: 500;">Question 1 of 45</span>
+                        <span id="timer-display" style="font-weight: bold;">Time: <span id="time">00:00</span></span>
+                    </div>
+                    
+                    <div id="question-text" style="font-size: 1.15rem; margin-bottom: 2rem;"></div>
+                    <div id="options-container" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                    
+                    <div class="quiz-controls" style="margin-top: 2.5rem; display: flex; gap: 1rem;">
+                        <!-- Styled matching the screenshot's action buttons -->
+                        <button id="mark-review-btn" style="background: #eab308; color: white; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: bold;">Mark for Review</button>
+                        <button id="next-btn" onclick="nextQuestion()" style="background: #10b981; color: white; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: bold; margin-left: auto;">Save & Next</button>
+                    </div>
+                </div>
+
+                <!-- Right Column: The Navigator Panel -->
+                <div class="navigator-panel" style="width: 320px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem;">Question Navigator</h3>
+                    
+                    <!-- The Grid for the Question Numbers -->
+                    <div id="navigator-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-top: 1.5rem;">
+                        <!-- JavaScript will inject buttons here like: <button class="nav-btn">1</button> -->
+                    </div>
+                    
+                    <button onclick="buildPreSubmitReview()" style="width: 100%; margin-top: 2rem; background: #3b82f6; color: white; border-radius: 8px; padding: 1rem; font-weight: bold; border: none;">Submit Final Test</button>
+                </div>
             </div>
         </section>
 
@@ -219,7 +241,7 @@
                 <button onclick="startCustomPractice()" style="font-size: 1.2rem; padding: 1rem 3rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);">Start Session</button>
             </div>
         </section>
-
+    <h2>Master Chemistry with <span class="gradient-text">Daily Puzzles</span></h2>
     </main>
     <script src="script.js"></script>
 </body>
