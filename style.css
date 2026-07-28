@@ -12,14 +12,34 @@
 }
 
 body, html {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--background);
-    color: var(--text);
     margin: 0;
     padding: 0;
-    line-height: 1.6;
     width: 100%;
     min-height: 100vh;
+    background-color: #f8fafc; /* A very soft, luxurious off-white/gray */
+    color: #1e293b;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+.gradient-text {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6); /* Blue to Purple */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+#options-container button {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+#options-container button:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
 }
 
 /* =========================================
@@ -164,31 +184,17 @@ main {
     margin: 0 auto;
 }
 
-.view { display: none; animation: fadeIn 0.4s ease; 
-    background: rgba(15, 23, 42, 0.65) !important; /* Darker slate glass */
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    border-radius: 12px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+.view {
+    background: #ffffff !important;
+    border: 1px solid #f1f5f9 !important;
+    border-radius: 16px;
     
-    /* Layout & Readability */
-    max-width: 850px; /* Prevents the box from stretching too wide on big screens */
-    margin: 0 auto; /* Centers the box perfectly */
-    padding: 3rem;
-    color: #f8fafc !important; /* Bright off-white text for high contrast */
-      }
-/* 3. Ensure the multiple-choice buttons look good on dark glass */
-#options-container button {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #f8fafc;
-    transition: all 0.2s ease;
-}
-
-#options-container button:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #3b82f6; /* A nice blue highlight on hover */
+    /* This specific shadow gives the "Apple/Stripe" floating effect */
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+    
+    max-width: 1100px; /* Widened slightly to accommodate the new 2-column layout */
+    margin: 2rem auto;
+    padding: 2.5rem;
 }
 .view.active { display: block; }
 
