@@ -208,6 +208,29 @@ button:hover, .btn-link:hover {
     transform: translateY(-1px);
 }
 
+/* Universal Action Buttons */
+.btn-primary {
+    background-color: #0ea5e9 !important;
+    color: #ffffff !important; /* Forces the text to stay white */
+    border: none !important;
+}
+
+.btn-primary:hover {
+    background-color: #0284c7 !important;
+}
+
+.btn-secondary {
+    background-color: #f8fafc !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+#mark-review-btn {
+    background-color: #fffbeb !important;
+    color: #b45309 !important;
+    border: 1px solid #eab308 !important;
+}
+
 main {
     background: transparent !important;
     border: none !important;
