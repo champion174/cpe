@@ -54,7 +54,14 @@ function renderMath() {
             .catch((err) => console.log('MathJax formatting failed: ', err));
     }
 }
-// Initialize the Vanta.js Neural/Net Background
+
+// --- INITIALIZATION ---
+window.onload = async () => {
+    const overlay = document.getElementById('loading-overlay');
+    const statusText = document.getElementById('status-text');
+    const subText = document.getElementById('status-subtext');
+
+    // Initialize the Vanta.js Neural/Net Background
     VANTA.NET({
         el: "#app-body",
         mouseControls: true,
@@ -70,12 +77,7 @@ function renderMath() {
         maxDistance: 22.00,
         spacing: 18.00
     });
-// --- INITIALIZATION ---
-window.onload = async () => {
-    const overlay = document.getElementById('loading-overlay');
-    const statusText = document.getElementById('status-text');
-    const subText = document.getElementById('status-subtext');
-
+    
     try {
         // ONE SINGLE API CALL for everything!
         let response = await fetch(API_URL + "?mode=init");
