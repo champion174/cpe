@@ -282,13 +282,10 @@ function renderQuestion() {
     let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
     let qRating = getCol(qData, 'Difficulty Rating') || "Unrated";
     
-    // 1. Update the top counter (Replaces "Loading...")
+    // 1. Update the top counter
     document.getElementById("question-counter").innerText = `Question ${currentQuestionIndex + 1} of ${currentQuizData.length}`;
     
-    // 2. Update the orange highlight on the sidebar
-    updateNavigatorHighlight();
-    
-    // 3. Render Question Text & Image
+    // 2. Render Question Text & Image
     let qHTML = `<h3 style="margin-top: 0; font-size: 1.15rem;">Q${currentQuestionIndex + 1}: ${parseContent(getCol(qData, 'Question Text'), '100%')}</h3>`;
     let extImage = getCol(qData, 'Image URL');
     if (extImage !== '') qHTML += `<img src="${extImage}" style="max-width: 100%; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">`;
@@ -296,7 +293,7 @@ function renderQuestion() {
     
     document.getElementById('question-text').innerHTML = qHTML;
     
-    // 4. Render Options based on type
+    // 3. Render Options
     let container = document.getElementById('options-container');
     let optionsHTML = '';
     
@@ -325,7 +322,11 @@ function renderQuestion() {
     }
     
     container.innerHTML = optionsHTML;
-    renderMath();
+    
+    // 4. UPDATE ALL DYNAMIC STATES
+    updateNavigatorHighlight(); // Updates the sidebar colors
+    updateActionButtons();      // Updates Flag, Next, Prev text/visibility
+    renderMath();               // Renders LaTeX equations
 }
 
 function selectOption(t) { userAnswers[currentQuestionIndex] = t; renderQuestion(); }
@@ -407,11 +408,8 @@ function jumpToQuestion(index) {
 
 function markForReview() {
     let q = currentQuizData[currentQuestionIndex];
-    
-    // Toggle the flag status true/false
     q.isFlagged = !q.isFlagged;
     
-    // Update the UI immediately
     updateNavigatorHighlight();
     updateActionButtons();
 }
@@ -483,19 +481,17 @@ function updateNavigatorHighlight() {
 
 // --- BUTTON VISIBILITY HELPER ---
 function updateActionButtons() {
-    // Hide 'Previous' on the first question
+    // Next / Prev buttons
     document.getElementById('prev-btn').style.visibility = (currentQuestionIndex === 0) ? 'hidden' : 'visible';
+    document.getElementById('next-btn').innerText = (currentQuestionIndex === currentQuizData.length - 1) ? 'Finish' : 'Save & Advance →';
     
-    // Change 'Next' to 'Finish' on the last question
-    document.getElementById('next-btn').innerHTML = (currentQuestionIndex === currentQuizData.length - 1) ? 'Finish' : 'Save & Advance →';
-    
-    // Change the Flag button text if it is currently flagged
+    // Flag button
     let q = currentQuizData[currentQuestionIndex];
     let flagBtn = document.getElementById('mark-review-btn');
     if (q && q.isFlagged) {
-        flagBtn.innerText = "🚩 Unflag Question";
+        flagBtn.innerHTML = "🚩 Unflag Question";
     } else {
-        flagBtn.innerText = "Flag for Review";
+        flagBtn.innerHTML = "🚩 Flag for Review";
     }
 }
 
