@@ -66,6 +66,27 @@ body, html {
     color: #ffffff !important;
     border-color: #f97316 !important;
 }
+
+/* Color for questions the user has answered */
+.nav-btn.answered-nav {
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: #15803d;
+}
+
+/* Color for questions marked for review */
+.nav-btn.flagged-nav {
+    background: #fef08a;
+    border-color: #eab308;
+    color: #854d0e;
+}
+
+/* Ensure the currently active question always stays orange */
+.nav-btn.active-nav {
+    background: #f97316 !important; 
+    color: #ffffff !important;
+    border-color: #f97316 !important;
+}
 /* =========================================
    GLOSSY LOADING OVERLAY
    ========================================= */
