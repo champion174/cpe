@@ -184,19 +184,25 @@ main {
     margin: 0 auto;
 }
 
+/* 1. Hide ALL sections by default */
 .view {
+    display: none !important; 
+}
+
+/* 2. ONLY show the section with the 'active' class */
+.view.active {
+    display: block !important; 
+    
+    /* The Premium Card Styling */
     background: #ffffff !important;
     border: 1px solid #f1f5f9 !important;
     border-radius: 16px;
-    
-    /* This specific shadow gives the "Apple/Stripe" floating effect */
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.02);
     
-    max-width: 1100px; /* Widened slightly to accommodate the new 2-column layout */
+    max-width: 1100px; 
     margin: 2rem auto;
     padding: 2.5rem;
 }
-.view.active { display: block; }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
