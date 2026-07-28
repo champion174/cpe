@@ -153,6 +153,21 @@ function startDaily5() {
     startQuizEngine(300); 
 }
 
+// Example of where this goes in your setup function:
+function initializeSession(fetchedQuestions) {
+    questions = fetchedQuestions; // Your global array of questions
+    currentQuestionIndex = 0;
+    
+    // 1. Build the sidebar grid based on the ACTUAL number of questions fetched
+    buildNavigator(questions.length);
+    
+    // 2. Start the timer (assuming you have a startTimer function)
+    startTimer(15); // e.g., 15 minutes
+    
+    // 3. Render the first question
+    displayCurrentQuestion();
+}
+
 async function startCustomPractice() {
     // We still have to fetch Custom Practice because we don't know what they will select
     const overlay = document.getElementById('loading-overlay');
@@ -186,6 +201,56 @@ async function startCustomPractice() {
     } catch (error) {
         document.getElementById('status-text').innerText = "Error generating session.";
         document.querySelector('.spinner').style.display = 'none';
+    }
+}
+
+function displayCurrentQuestion() {
+    let q = questions[currentQuestionIndex];
+    
+    // 1. Update the dynamic counter in the top left
+    document.getElementById("question-counter").innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+    
+    // 2. Update the orange highlight on the sidebar
+    updateNavigatorHighlight();
+    
+    // 3. Render the question text
+    document.getElementById("question-text").innerHTML = q.Question_Text; 
+    
+    // 4. Render the options and make them clickable
+    let optionsContainer = document.getElementById("options-container");
+    optionsContainer.innerHTML = ""; // Clear old options
+    
+    let choices = [q.Option_A, q.Option_B, q.Option_C, q.Option_D];
+    
+    choices.forEach((choice, index) => {
+        let btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerHTML = choice;
+        
+        // If the user already selected this previously, keep it highlighted
+        if (q.userAnswer === index) {
+            btn.classList.add("selected");
+        }
+        
+        // Handle the click event
+        btn.onclick = function() {
+            // Remove 'selected' class from all sibling buttons
+            let allOptions = optionsContainer.querySelectorAll(".option-btn");
+            allOptions.forEach(opt => opt.classList.remove("selected"));
+            
+            // Add 'selected' class to the clicked button
+            btn.classList.add("selected");
+            
+            // Save the answer to your array so it remembers it if they navigate away
+            questions[currentQuestionIndex].userAnswer = index;
+        };
+        
+        optionsContainer.appendChild(btn);
+    });
+
+    // Re-run MathJax to render any LaTeX formulas in the new question
+    if (window.MathJax) {
+        MathJax.typesetPromise();
     }
 }
 
