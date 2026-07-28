@@ -598,11 +598,18 @@ main {
 .htp-box.present { background: #b59f3b; border-color: #b59f3b; }
 .htp-box.absent { background: #3a3a3c; border-color: #3a3a3c; }
 .container {
-    background: rgba(255, 255, 255, 0.25); /* White at 25% opacity */
-    backdrop-filter: blur(20px); /* A stronger blur is needed for light glass */
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    /* Force the semi-transparent background */
+    background: rgba(255, 255, 255, 0.15) !important; 
+    
+    /* Force the blur effect */
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    
+    /* The icy borders and shadows */
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
     border-radius: 16px;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-    color: #1e293b; /* Keeps your text dark for readability */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    
+    /* Ensure text stays readable */
+    color: #1e293b; 
 }
