@@ -400,10 +400,20 @@ function buildPreSubmitReview() {
 }
 
 function jumpToQuestion(index) {
-    currentQuestionIndex = index;
-    renderQuestion();
-    renderMath();
-    showView('quiz-ui');
+    currentQuestionIndex = index; 
+    renderQuestion(); // Re-render the screen for the new question
+    showView('quiz-ui'); // Ensures we flip back to the quiz if jumping from the review screen
+}
+
+function markForReview() {
+    let q = currentQuizData[currentQuestionIndex];
+    
+    // Toggle the flag status true/false
+    q.isFlagged = !q.isFlagged;
+    
+    // Update the UI immediately
+    updateNavigatorHighlight();
+    updateActionButtons();
 }
 
 // 1. Build the grid based on total questions
@@ -446,12 +456,47 @@ function updateNavigatorHighlight() {
     const buttons = document.querySelectorAll('.nav-btn');
     
     buttons.forEach((btn, index) => {
+        let q = currentQuizData[index];
+        
+        // 1. Reset the button text and classes
+        btn.className = 'nav-btn'; 
+        let btnText = index + 1;
+        
+        // 2. Check if flagged
+        if (q && q.isFlagged) {
+            btnText = "🚩 " + btnText;
+            btn.classList.add('flagged-nav');
+        } 
+        // 3. Check if answered (and NOT flagged)
+        else if (userAnswers[index] !== undefined && userAnswers[index] !== '') {
+            btn.classList.add('answered-nav');
+        }
+        
+        btn.innerText = btnText;
+        
+        // 4. Highlight the currently active question (overrides others)
         if (index === currentQuestionIndex) {
             btn.classList.add('active-nav');
-        } else {
-            btn.classList.remove('active-nav');
-        }
+        } 
     });
+}
+
+// --- BUTTON VISIBILITY HELPER ---
+function updateActionButtons() {
+    // Hide 'Previous' on the first question
+    document.getElementById('prev-btn').style.visibility = (currentQuestionIndex === 0) ? 'hidden' : 'visible';
+    
+    // Change 'Next' to 'Finish' on the last question
+    document.getElementById('next-btn').innerHTML = (currentQuestionIndex === currentQuizData.length - 1) ? 'Finish' : 'Save & Advance →';
+    
+    // Change the Flag button text if it is currently flagged
+    let q = currentQuizData[currentQuestionIndex];
+    let flagBtn = document.getElementById('mark-review-btn');
+    if (q && q.isFlagged) {
+        flagBtn.innerText = "🚩 Unflag Question";
+    } else {
+        flagBtn.innerText = "Flag for Review";
+    }
 }
 
 // --- REVIEW & SCORING UI ---
