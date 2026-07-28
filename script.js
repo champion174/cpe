@@ -153,21 +153,6 @@ function startDaily5() {
     startQuizEngine(300); 
 }
 
-// Example of where this goes in your setup function:
-function initializeSession(fetchedQuestions) {
-    questions = fetchedQuestions; // Your global array of questions
-    currentQuestionIndex = 0;
-    
-    // 1. Build the sidebar grid based on the ACTUAL number of questions fetched
-    buildNavigator(questions.length);
-    
-    // 2. Start the timer (assuming you have a startTimer function)
-    startTimer(15); // e.g., 15 minutes
-    
-    // 3. Render the first question
-    displayCurrentQuestion();
-}
-
 async function startCustomPractice() {
     // We still have to fetch Custom Practice because we don't know what they will select
     const overlay = document.getElementById('loading-overlay');
@@ -266,10 +251,29 @@ function preloadQuizImages(quizDataArray) {
 }
 
 // --- ACTIVE QUIZ UI ---
+// --- ACTIVE QUIZ UI ---
 function startQuizEngine(timeInSeconds) {
-    if(currentQuizData.length === 0) { alert("No questions found for this selection."); showView('practice-setup'); return; }
-    userAnswers = {}; currentQuestionIndex = 0; timeLeftRemaining = timeInSeconds;
-    showView('quiz-ui'); renderQuestion(); startTimer();
+    if(currentQuizData.length === 0) { 
+        alert("No questions found for this selection."); 
+        showView('practice-setup'); 
+        return; 
+    }
+    
+    // Reset Data
+    userAnswers = {}; 
+    currentQuestionIndex = 0; 
+    timeLeftRemaining = timeInSeconds;
+    
+    // NEW: Generate the sidebar buttons right before showing the UI
+    buildNavigator(currentQuizData.length);
+    
+    // Transition UI and start the first question
+    showView('quiz-ui'); 
+    renderQuestion(); 
+    
+    // Clear any stuck timers, then start fresh
+    if (typeof timerInterval !== 'undefined') clearInterval(timerInterval);
+    startTimer();
     renderMath();
 }
 
@@ -278,24 +282,31 @@ function renderQuestion() {
     let qType = String(getCol(qData, 'Question Type')).trim().toUpperCase();
     let qRating = getCol(qData, 'Difficulty Rating') || "Unrated";
     
-    let qHTML = `<h3 style="margin-top: 0;">Q${currentQuestionIndex + 1}: ${parseContent(getCol(qData, 'Question Text'), '100%')}</h3>`;
+    // 1. Update the top counter (Replaces "Loading...")
+    document.getElementById("question-counter").innerText = `Question ${currentQuestionIndex + 1} of ${currentQuizData.length}`;
+    
+    // 2. Update the orange highlight on the sidebar
+    updateNavigatorHighlight();
+    
+    // 3. Render Question Text & Image
+    let qHTML = `<h3 style="margin-top: 0; font-size: 1.15rem;">Q${currentQuestionIndex + 1}: ${parseContent(getCol(qData, 'Question Text'), '100%')}</h3>`;
     let extImage = getCol(qData, 'Image URL');
     if (extImage !== '') qHTML += `<img src="${extImage}" style="max-width: 100%; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #e2e8f0;">`;
-    qHTML += `<div style="display: inline-block; background: #f1f5f9; color: #64748b; font-size: 0.85rem; padding: 0.25rem 0.75rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: bold;">⭐ Difficulty Rating: ${qRating}</div>`;
+    qHTML += `<div style="display: inline-block; background: #fef08a; color: #854d0e; font-size: 0.85rem; padding: 0.25rem 0.75rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: bold;">⭐ Difficulty Rating: ${qRating}</div>`;
     
     document.getElementById('question-text').innerHTML = qHTML;
-    renderMath();
+    
+    // 4. Render Options based on type
     let container = document.getElementById('options-container');
     let optionsHTML = '';
-    
-    // MSQ Alert Label
-    if (qType === 'MSQ') optionsHTML += `<p style="color: #0ea5e9; font-weight: bold; font-size: 0.9rem; margin-top: -1rem; margin-bottom: 1rem;">[Multiple Select Question: Choose all that apply]</p>`;
     
     if (qType === 'FITB') {
         let currentAns = userAnswers[currentQuestionIndex] || '';
         optionsHTML = `<input type="text" class="fitb-input" placeholder="Type answer..." value="${currentAns}" onkeyup="selectFITB(this.value)">`;
     } else if (qType === 'MSQ') {
         let currentSelections = Array.isArray(userAnswers[currentQuestionIndex]) ? userAnswers[currentQuestionIndex] : [];
+        optionsHTML += `<p style="color: #0ea5e9; font-weight: bold; font-size: 0.9rem; margin-top: -1rem; margin-bottom: 1rem;">[Multiple Select Question: Choose all that apply]</p>`;
+        
         ['A', 'B', 'C', 'D'].forEach(opt => {
             let optText = getCol(qData, `Option ${opt}`);
             if (optText) {
@@ -312,10 +323,8 @@ function renderQuestion() {
             }
         });
     }
+    
     container.innerHTML = optionsHTML;
-
-    document.getElementById('prev-btn').style.visibility = (currentQuestionIndex === 0) ? 'hidden' : 'visible';
-    document.getElementById('next-btn').style.visibility = (currentQuestionIndex === currentQuizData.length - 1) ? 'hidden' : 'visible';
     renderMath();
 }
 
@@ -426,7 +435,7 @@ function jumpToQuestion(index) {
     
     // Call your existing function that renders the question onto the screen
     // (e.g., renderQuestion(), displayCurrentQuestion(), etc.)
-    displayCurrentQuestion(); 
+    //displayCurrentQuestion(); 
     
     // Update the orange highlight on the sidebar
     updateNavigatorHighlight();
