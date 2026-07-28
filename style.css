@@ -143,13 +143,14 @@ button:hover, .btn-link:hover {
     transform: translateY(-1px);
 }
 
-main,.view {
-    background: rgba(255, 255, 255, 0.15) !important; 
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+main {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 2rem 1rem;
     border-radius: 16px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     color: #1e293b;
     max-width: 1400px; /* Expanded from 800px to fit all 3 columns */
     width: 95%;
@@ -163,7 +164,32 @@ main,.view {
     margin: 0 auto;
 }
 
-.view { display: none; animation: fadeIn 0.4s ease; }
+.view { display: none; animation: fadeIn 0.4s ease; 
+    background: rgba(15, 23, 42, 0.65) !important; /* Darker slate glass */
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    
+    /* Layout & Readability */
+    max-width: 850px; /* Prevents the box from stretching too wide on big screens */
+    margin: 0 auto; /* Centers the box perfectly */
+    padding: 3rem;
+    color: #f8fafc !important; /* Bright off-white text for high contrast */
+      }
+/* 3. Ensure the multiple-choice buttons look good on dark glass */
+#options-container button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+#options-container button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #3b82f6; /* A nice blue highlight on hover */
+}
 .view.active { display: block; }
 
 @keyframes fadeIn {
