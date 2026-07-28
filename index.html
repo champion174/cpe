@@ -160,10 +160,13 @@
             <div id="question-text" class="q-text"></div>
             <div id="options-container" class="options-list"></div>
             
-            <div class="action-row">
-                <button id="mark-review-btn" class="btn-secondary" onclick="markForReview()">Flag for Review</button>
-                <button id="next-btn" class="btn-primary" onclick="nextQuestion()">Save & Advance</button>
-            </div>
+            <div class="action-row" style="display: flex; gap: 1rem; margin-top: 2rem;">
+    <button id="prev-btn" class="btn-secondary" onclick="prevQuestion()" style="padding: 0.75rem 1.5rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer;">← Previous</button>
+    
+    <button id="mark-review-btn" class="btn-secondary" onclick="markForReview()" style="padding: 0.75rem 1.5rem; border-radius: 6px; border: 1px solid #eab308; background: #fffbeb; color: #b45309; cursor: pointer; font-weight: bold;">Flag for Review</button>
+    
+    <button id="next-btn" class="btn-primary" onclick="nextQuestion()" style="margin-left: auto; padding: 0.75rem 1.5rem; border-radius: 6px; border: none; background: #0ea5e9; color: white; font-weight: bold; cursor: pointer;">Save & Advance →</button>
+</div>
         </div>
 
         <!-- Right: Navigation Matrix -->
