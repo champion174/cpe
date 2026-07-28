@@ -213,17 +213,14 @@ main {
     display: none !important; 
 }
 
-/* 2. ONLY show the section with the 'active' class */
 .view.active {
     display: block !important; 
-    
-    /* The Premium Card Styling */
     background: #ffffff !important;
     border: 1px solid #f1f5f9 !important;
     border-radius: 16px;
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
     
-    max-width: 1100px; 
+    max-width: 1200px !important; /* <--- INCREASE THIS SO THE 2 COLUMNS FIT */
     margin: 2rem auto;
     padding: 2.5rem;
 }
@@ -272,9 +269,11 @@ main {
 
 .option-btn:hover { background: #e2e8f0; transform: none; }
 .option-btn.selected {
-    background: #e0f2fe;
-    border-color: var(--primary);
-    color: var(--primary-hover);
+    background: #eff6ff !important;
+    border-color: #3b82f6 !important;
+    border-left: 4px solid #3b82f6 !important;
+    color: #0f172a !important; /* Forces the text to stay dark */
+    font-weight: 600 !important;
 }
 
 .fitb-input {
