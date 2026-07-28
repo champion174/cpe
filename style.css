@@ -11,13 +11,15 @@
     --danger-bg: #fee2e2;
 }
 
-body {
+body, html {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--background);
     color: var(--text);
     margin: 0;
     padding: 0;
     line-height: 1.6;
+    width: 100%;
+    min-height: 100vh;
 }
 
 /* =========================================
@@ -60,7 +62,10 @@ body {
 /* Check this */
 
 header {
-    background: var(--surface);
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4) !important;
     padding: 1rem 10%;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     display: flex;
@@ -138,14 +143,18 @@ button:hover, .btn-link:hover {
     transform: translateY(-1px);
 }
 
-main {
+main,.view {
+    background: rgba(255, 255, 255, 0.15) !important; 
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    color: #1e293b;
     max-width: 1400px; /* Expanded from 800px to fit all 3 columns */
     width: 95%;
     margin: 3rem auto;
     padding: 2.5rem;
-    background: var(--surface);
-    border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08); /* Softer, premium shadow */
 }
 
 /* Keep the actual quiz and setup screens narrow and readable */
