@@ -60,23 +60,6 @@ window.onload = async () => {
     const overlay = document.getElementById('loading-overlay');
     const statusText = document.getElementById('status-text');
     const subText = document.getElementById('status-subtext');
-
-    // Initialize the Vanta.js Neural/Net Background
-    VANTA.NET({
-        el: "#app-body",
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        minHeight: 200.00,
-        minWidth: 200.00,
-        scale: 1.00,
-        scaleMobile: 1.00,
-        color: 0x3b82f6, // Your platform's blue theme
-        backgroundColor: 0x0f172a, // A deep, dark blue/gray
-        points: 12.00,
-        maxDistance: 22.00,
-        spacing: 18.00
-    });
     
     try {
         // ONE SINGLE API CALL for everything!
