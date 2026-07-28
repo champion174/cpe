@@ -42,6 +42,30 @@ body, html {
     background: #eff6ff;
 }
 
+/* Sidebar Grid Buttons */
+.nav-btn {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    border-radius: 6px;
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+/* The actively selected question */
+.nav-btn.active-nav {
+    background: #f97316 !important; /* Premium orange highlight */
+    color: #ffffff !important;
+    border-color: #f97316 !important;
+}
 /* =========================================
    GLOSSY LOADING OVERLAY
    ========================================= */
