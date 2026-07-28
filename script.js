@@ -332,6 +332,54 @@ function jumpToQuestion(index) {
     showView('quiz-ui');
 }
 
+// 1. Build the grid based on total questions
+function buildNavigator(totalQuestions) {
+    const grid = document.getElementById('navigator-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = ''; // Clear out any old buttons
+    
+    for (let i = 0; i < totalQuestions; i++) {
+        let btn = document.createElement('button');
+        btn.innerText = i + 1;
+        btn.className = 'nav-btn';
+        
+        // When clicked, jump to that specific question
+        btn.onclick = function() {
+            jumpToQuestion(i);
+        };
+        
+        grid.appendChild(btn);
+    }
+}
+
+// 2. Handle the jump logic
+function jumpToQuestion(index) {
+    // NOTE: Update 'currentQuestionIndex' to match whatever variable name 
+    // you are using in your code to track the current question number!
+    currentQuestionIndex = index; 
+    
+    // Call your existing function that renders the question onto the screen
+    // (e.g., renderQuestion(), displayCurrentQuestion(), etc.)
+    displayCurrentQuestion(); 
+    
+    // Update the orange highlight on the sidebar
+    updateNavigatorHighlight();
+}
+
+// 3. Move the orange highlight to the correct button
+function updateNavigatorHighlight() {
+    const buttons = document.querySelectorAll('.nav-btn');
+    
+    buttons.forEach((btn, index) => {
+        if (index === currentQuestionIndex) {
+            btn.classList.add('active-nav');
+        } else {
+            btn.classList.remove('active-nav');
+        }
+    });
+}
+
 // --- REVIEW & SCORING UI ---
 function calculateScore() {
     clearInterval(timerInterval);
