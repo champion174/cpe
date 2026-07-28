@@ -170,7 +170,7 @@ async function startCustomPractice() {
 
     let queryUrl = `${API_URL}?mode=custom&exam=${encodeURIComponent(exam)}&part=${encodeURIComponent(part)}&category=${encodeURIComponent(category)}&chapter=${encodeURIComponent(chapter)}&limit=${numQuestions}`;
 
-    // NEW: Frontend Warning
+    // Frontend Warning
     if (numQuestions > 200) {
         alert("Maximum limit is 200 questions.");
         document.getElementById('num-questions').value = 200;
@@ -189,56 +189,6 @@ async function startCustomPractice() {
     }
 }
 
-function displayCurrentQuestion() {
-    let q = questions[currentQuestionIndex];
-    
-    // 1. Update the dynamic counter in the top left
-    document.getElementById("question-counter").innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
-    
-    // 2. Update the orange highlight on the sidebar
-    updateNavigatorHighlight();
-    
-    // 3. Render the question text
-    document.getElementById("question-text").innerHTML = q.Question_Text; 
-    
-    // 4. Render the options and make them clickable
-    let optionsContainer = document.getElementById("options-container");
-    optionsContainer.innerHTML = ""; // Clear old options
-    
-    let choices = [q.Option_A, q.Option_B, q.Option_C, q.Option_D];
-    
-    choices.forEach((choice, index) => {
-        let btn = document.createElement("button");
-        btn.className = "option-btn";
-        btn.innerHTML = choice;
-        
-        // If the user already selected this previously, keep it highlighted
-        if (q.userAnswer === index) {
-            btn.classList.add("selected");
-        }
-        
-        // Handle the click event
-        btn.onclick = function() {
-            // Remove 'selected' class from all sibling buttons
-            let allOptions = optionsContainer.querySelectorAll(".option-btn");
-            allOptions.forEach(opt => opt.classList.remove("selected"));
-            
-            // Add 'selected' class to the clicked button
-            btn.classList.add("selected");
-            
-            // Save the answer to your array so it remembers it if they navigate away
-            questions[currentQuestionIndex].userAnswer = index;
-        };
-        
-        optionsContainer.appendChild(btn);
-    });
-
-    // Re-run MathJax to render any LaTeX formulas in the new question
-    if (window.MathJax) {
-        MathJax.typesetPromise();
-    }
-}
-
 // --- INVISIBLE IMAGE PRELOADER ---
 function preloadQuizImages(quizDataArray) {
     quizDataArray.forEach(q => {
@@ -250,8 +200,10 @@ function preloadQuizImages(quizDataArray) {
     });
 }
 
-// --- ACTIVE QUIZ UI ---
-// --- ACTIVE QUIZ UI ---
+// ==========================================
+// UNIFIED QUIZ ENGINE LOGIC
+// ==========================================
+
 function startQuizEngine(timeInSeconds) {
     if(currentQuizData.length === 0) { 
         alert("No questions found for this selection."); 
@@ -259,22 +211,22 @@ function startQuizEngine(timeInSeconds) {
         return; 
     }
     
-    // Reset Data
+    // 1. Reset everything for a fresh session
     userAnswers = {}; 
     currentQuestionIndex = 0; 
     timeLeftRemaining = timeInSeconds;
     
-    // NEW: Generate the sidebar buttons right before showing the UI
-    buildNavigator(currentQuizData.length);
+    // 2. Ensure all questions have a clean flag state
+    currentQuizData.forEach(q => q.isFlagged = false);
     
-    // Transition UI and start the first question
+    // 3. Build UI and Render
+    buildNavigator(currentQuizData.length);
     showView('quiz-ui'); 
     renderQuestion(); 
     
-    // Clear any stuck timers, then start fresh
+    // 4. Start Timer
     if (typeof timerInterval !== 'undefined') clearInterval(timerInterval);
     startTimer();
-    renderMath();
 }
 
 function renderQuestion() {
@@ -323,16 +275,16 @@ function renderQuestion() {
     
     container.innerHTML = optionsHTML;
     
-    // 4. UPDATE ALL DYNAMIC STATES
-    updateNavigatorHighlight(); // Updates the sidebar colors
-    updateActionButtons();      // Updates Flag, Next, Prev text/visibility
-    renderMath();               // Renders LaTeX equations
+    // 4. UPDATE ALL DYNAMIC STATES 
+    updateNavigatorHighlight(); 
+    updateActionButtons();      
+    renderMath();               
 }
 
+// --- INTERACTION LOGIC ---
 function selectOption(t) { userAnswers[currentQuestionIndex] = t; renderQuestion(); }
 function selectFITB(t) { userAnswers[currentQuestionIndex] = t; }
 
-// NEW: Toggle Logic for Multiple Select
 function selectMSQOption(t) {
     if (!Array.isArray(userAnswers[currentQuestionIndex])) userAnswers[currentQuestionIndex] = [];
     let idx = userAnswers[currentQuestionIndex].indexOf(t);
@@ -341,8 +293,89 @@ function selectMSQOption(t) {
     renderQuestion();
 }
 
-function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; renderQuestion(); } }
-function nextQuestion() { if (currentQuestionIndex < currentQuizData.length - 1) { currentQuestionIndex++; renderQuestion(); } }
+function jumpToQuestion(index) {
+    currentQuestionIndex = index; 
+    renderQuestion(); 
+    showView('quiz-ui'); 
+}
+
+function nextQuestion() { 
+    if (currentQuestionIndex < currentQuizData.length - 1) { 
+        currentQuestionIndex++; 
+        renderQuestion(); 
+    } 
+}
+
+function prevQuestion() { 
+    if (currentQuestionIndex > 0) { 
+        currentQuestionIndex--; 
+        renderQuestion(); 
+    } 
+}
+
+function markForReview() {
+    let q = currentQuizData[currentQuestionIndex];
+    q.isFlagged = !q.isFlagged;
+    
+    updateNavigatorHighlight();
+    updateActionButtons();
+}
+
+// --- UI HELPERS ---
+function updateActionButtons() {
+    // Next / Prev buttons
+    document.getElementById('prev-btn').style.visibility = (currentQuestionIndex === 0) ? 'hidden' : 'visible';
+    document.getElementById('next-btn').innerText = (currentQuestionIndex === currentQuizData.length - 1) ? 'Finish' : 'Save & Advance →';
+    
+    // Flag button
+    let q = currentQuizData[currentQuestionIndex];
+    let flagBtn = document.getElementById('mark-review-btn');
+    if (q && q.isFlagged) {
+        flagBtn.innerHTML = "🚩 Unflag Question";
+    } else {
+        flagBtn.innerHTML = "🚩 Flag for Review";
+    }
+}
+
+function buildNavigator(totalQuestions) {
+    const grid = document.getElementById('navigator-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = ''; // Clear out any old buttons
+    for (let i = 0; i < totalQuestions; i++) {
+        let btn = document.createElement('button');
+        btn.innerText = i + 1;
+        btn.className = 'nav-btn';
+        btn.onclick = function() { jumpToQuestion(i); };
+        grid.appendChild(btn);
+    }
+}
+
+function updateNavigatorHighlight() {
+    const buttons = document.querySelectorAll('.nav-btn');
+    buttons.forEach((btn, index) => {
+        let q = currentQuizData[index];
+        btn.className = 'nav-btn'; // Reset classes
+        let btnText = index + 1;
+        
+        // 1. Check for flags
+        if (q && q.isFlagged) {
+            btnText = "🚩 " + btnText;
+            btn.classList.add('flagged-nav');
+        } 
+        // 2. Check for answered
+        else if (userAnswers[index] !== undefined && userAnswers[index] !== '') {
+            btn.classList.add('answered-nav');
+        }
+        
+        btn.innerText = btnText;
+        
+        // 3. Highlight the active question
+        if (index === currentQuestionIndex) {
+            btn.classList.add('active-nav');
+        } 
+    });
+}
 
 function startTimer() {
     timerInterval = setInterval(() => {
@@ -400,101 +433,6 @@ function buildPreSubmitReview() {
     showView('pre-submit-review');
 }
 
-function jumpToQuestion(index) {
-    currentQuestionIndex = index; 
-    renderQuestion(); // Re-render the screen for the new question
-    showView('quiz-ui'); // Ensures we flip back to the quiz if jumping from the review screen
-}
-
-function markForReview() {
-    let q = currentQuizData[currentQuestionIndex];
-    q.isFlagged = !q.isFlagged;
-    
-    updateNavigatorHighlight();
-    updateActionButtons();
-}
-
-// 1. Build the grid based on total questions
-function buildNavigator(totalQuestions) {
-    const grid = document.getElementById('navigator-grid');
-    if (!grid) return;
-    
-    grid.innerHTML = ''; // Clear out any old buttons
-    
-    for (let i = 0; i < totalQuestions; i++) {
-        let btn = document.createElement('button');
-        btn.innerText = i + 1;
-        btn.className = 'nav-btn';
-        
-        // When clicked, jump to that specific question
-        btn.onclick = function() {
-            jumpToQuestion(i);
-        };
-        
-        grid.appendChild(btn);
-    }
-}
-
-// 2. Handle the jump logic
-function jumpToQuestion(index) {
-    // NOTE: Update 'currentQuestionIndex' to match whatever variable name 
-    // you are using in your code to track the current question number!
-    currentQuestionIndex = index; 
-    
-    // Call your existing function that renders the question onto the screen
-    // (e.g., renderQuestion(), displayCurrentQuestion(), etc.)
-    //displayCurrentQuestion(); 
-    
-    // Update the orange highlight on the sidebar
-    updateNavigatorHighlight();
-}
-
-// 3. Move the orange highlight to the correct button
-function updateNavigatorHighlight() {
-    const buttons = document.querySelectorAll('.nav-btn');
-    
-    buttons.forEach((btn, index) => {
-        let q = currentQuizData[index];
-        
-        // 1. Reset the button text and classes
-        btn.className = 'nav-btn'; 
-        let btnText = index + 1;
-        
-        // 2. Check if flagged
-        if (q && q.isFlagged) {
-            btnText = "🚩 " + btnText;
-            btn.classList.add('flagged-nav');
-        } 
-        // 3. Check if answered (and NOT flagged)
-        else if (userAnswers[index] !== undefined && userAnswers[index] !== '') {
-            btn.classList.add('answered-nav');
-        }
-        
-        btn.innerText = btnText;
-        
-        // 4. Highlight the currently active question (overrides others)
-        if (index === currentQuestionIndex) {
-            btn.classList.add('active-nav');
-        } 
-    });
-}
-
-// --- BUTTON VISIBILITY HELPER ---
-function updateActionButtons() {
-    // Next / Prev buttons
-    document.getElementById('prev-btn').style.visibility = (currentQuestionIndex === 0) ? 'hidden' : 'visible';
-    document.getElementById('next-btn').innerText = (currentQuestionIndex === currentQuizData.length - 1) ? 'Finish' : 'Save & Advance →';
-    
-    // Flag button
-    let q = currentQuizData[currentQuestionIndex];
-    let flagBtn = document.getElementById('mark-review-btn');
-    if (q && q.isFlagged) {
-        flagBtn.innerHTML = "🚩 Unflag Question";
-    } else {
-        flagBtn.innerHTML = "🚩 Flag for Review";
-    }
-}
-
 // --- REVIEW & SCORING UI ---
 function calculateScore() {
     clearInterval(timerInterval);
@@ -513,16 +451,13 @@ function calculateScore() {
 
         // 1. Scoring Logic
         if (qType === 'MSQ') {
-            // Split "A;B;C" into an array, clean spaces, and sort alphabetically
             correctArr = rawCorrect.split(';').map(s => s.trim().toUpperCase()).sort();
             userArr = Array.isArray(userAns) ? userAns.slice().sort() : [];
-            // Arrays must match in length and content
             isCorrect = (correctArr.length === userArr.length && correctArr.every((val, i) => val === userArr[i]));
         } else if (qType === 'FITB') {
             userAns = userAns || "Unanswered";
             if (userAns.toString().trim().toLowerCase() === rawCorrect.toLowerCase()) isCorrect = true;
         } else {
-            // Standard MCQ
             userAns = userAns || "Unanswered";
             let correctLetter = /^[A-D]$/i.test(rawCorrect) ? rawCorrect.toUpperCase() : "None";
             if (correctLetter === "None") {
