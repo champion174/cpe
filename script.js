@@ -739,30 +739,38 @@ function checkCrossword() {
 }
 
 // --- ADMIN BACKDOOR ---
+let sessionAdminPassword = "";
 
-// Make the lock clickable
-document.getElementById('admin-lock').onclick = function(e) {
-    if (e.target.id === 'admin-lock') {
-        const menu = document.getElementById('admin-menu');
-        menu.style.display = menu.style.display === 'none' || menu.style.display === '' ? 'flex' : 'none';
+function promptAdmin() {
+    const pwd = prompt("Enter Admin Password:");
+    if (pwd) {
+        // We store it in memory for this session
+        sessionAdminPassword = pwd;
+        
+        // Open the form view
+        showView('add-question-view');
+        
+        // Optional: Pre-fill the form with your current Exam/Part to save typing
+        document.getElementById('add-exam').value = document.getElementById('exam-filter').value !== "All" ? document.getElementById('exam-filter').value : "";
     }
-};
-
-function showAddQuestionForm() {
-    document.getElementById('admin-menu').style.display = 'none';
-    showView('add-question-view');
 }
 
 async function submitNewQuestion(event) {
-    event.preventDefault(); // Stops the page from refreshing
+    event.preventDefault(); 
     
+    if (!sessionAdminPassword) {
+        alert("Session expired. Please click the lock and enter the password again.");
+        return;
+    }
+
     const btn = document.getElementById('submit-q-btn');
     btn.innerText = 'Uploading...';
     btn.disabled = true;
 
-    // Create the payload matching your Google Sheet column headers exactly
+    // Attach the password to the payload so the backend can verify it
     const payload = {
         action: "addQuestion",
+        auth: sessionAdminPassword, // <--- The backend will check this
         data: {
             Question_ID: document.getElementById('add-qid').value,
             Category: document.getElementById('add-category').value,
@@ -783,7 +791,6 @@ async function submitNewQuestion(event) {
     };
 
     try {
-        // Send a POST request to your existing API URL
         const response = await fetch(API_URL, {
             method: 'POST',
             body: JSON.stringify(payload)
@@ -793,9 +800,11 @@ async function submitNewQuestion(event) {
         
         if (result.status === "success") {
             alert('Success! Question added to database.');
-            document.getElementById('add-question-form').reset(); // Clear the form
+            document.getElementById('add-question-form').reset(); 
         } else {
+            // If Google rejects the password, the error shows here
             alert('Backend error: ' + result.error);
+            sessionAdminPassword = ""; // Clear the bad password
         }
     } catch (err) {
         alert('Failed to connect to the server.');
