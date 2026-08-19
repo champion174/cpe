@@ -845,19 +845,38 @@ main {
 
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.25rem;
+    /* Increased the minimum width so they don't squish into each other */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
 }
 
 .options-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
+    /* Allows options to stack cleanly if the screen gets too narrow */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
     margin: 1.5rem 0;
     background: #ffffff;
     padding: 1.5rem;
     border-radius: 8px;
     border: 1px dashed #cbd5e1;
+    /* Prevents the dashed box itself from stretching */
+    box-sizing: border-box; 
+}
+
+.form-input {
+    width: 100%;
+    /* CRITICAL FIX: Keeps padding inside the 100% width to prevent overlapping */
+    box-sizing: border-box; 
+    padding: 0.75rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all 0.25s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .input-group {
@@ -876,19 +895,6 @@ main {
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.form-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #0f172a;
-    font-size: 0.95rem;
-    font-family: inherit;
-    transition: all 0.25s ease;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .form-input:focus {
