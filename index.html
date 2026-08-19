@@ -238,7 +238,67 @@
                 <button onclick="startCustomPractice()" style="font-size: 1.2rem; padding: 1rem 3rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);">Start Session</button>
             </div>
         </section>
+        <!-- ADMIN: ADD QUESTION VIEW -->
+    <section id="add-question-view" class="view">
+        <h2 style="margin-top: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem; color: #0f172a;">Add New Question</h2>
+        
+        <form id="add-question-form" onsubmit="submitNewQuestion(event)" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+            
+            <!-- Metadata column -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <input type="text" id="add-qid" placeholder="Question ID (e.g., Q-1001)" class="form-input" required>
+                <input type="text" id="add-exam" placeholder="Exam" class="form-input" required>
+                <input type="text" id="add-part" placeholder="Part" class="form-input" required>
+                <input type="text" id="add-category" placeholder="Category" class="form-input" required>
+                <input type="text" id="add-chapter" placeholder="Chapter" class="form-input" required>
+                
+                <select id="add-type" class="form-input" required>
+                    <option value="" disabled selected>Select Question Type...</option>
+                    <option value="MCQ">MCQ (Single Correct)</option>
+                    <option value="MSQ">MSQ (Multiple Correct)</option>
+                    <option value="FITB">FITB (Fill in the Blank)</option>
+                </select>
+                
+                <select id="add-rating" class="form-input" required>
+                    <option value="" disabled selected>Difficulty Rating (1-5)...</option>
+                    <option value="1/5">1/5 (Easiest)</option>
+                    <option value="2/5">2/5</option>
+                    <option value="3/5">3/5 (Medium)</option>
+                    <option value="4/5">4/5</option>
+                    <option value="5/5">5/5 (Hardest)</option>
+                </select>
+            </div>
+
+            <!-- Content column -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <textarea id="add-qtext" placeholder="Question Text (Use \( \) for inline MathJax)" rows="4" class="form-input" required></textarea>
+                <input type="url" id="add-image" placeholder="Image URL (Optional)" class="form-input">
+                
+                <input type="text" id="add-opta" placeholder="Option A" class="form-input">
+                <input type="text" id="add-optb" placeholder="Option B" class="form-input">
+                <input type="text" id="add-optc" placeholder="Option C" class="form-input">
+                <input type="text" id="add-optd" placeholder="Option D" class="form-input">
+                
+                <input type="text" id="add-correct" placeholder="Correct Answer (e.g., A, or A;B, or exact text)" class="form-input" required>
+                <textarea id="add-exp" placeholder="Explanation (Optional)" rows="2" class="form-input"></textarea>
+            </div>
+
+            <div style="grid-column: span 2; text-align: right; margin-top: 1rem;">
+                <button type="button" class="btn-secondary" onclick="showView('home')" style="margin-right: 1rem;">Cancel</button>
+                <button type="submit" id="submit-q-btn" class="btn-primary" style="padding: 1rem 2rem;">Upload to Database</button>
+            </div>
+        </form>
+    </section>
     </main>
     <script src="script.js"></script>
+    <!-- HIDDEN ADMIN LOCK -->
+    <div id="admin-lock" style="position: fixed; bottom: 15px; right: 15px; opacity: 0.1; cursor: pointer; font-size: 1.5rem; z-index: 9999; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.1'">
+        🔒
+        <div id="admin-menu" style="display: none; position: absolute; bottom: 35px; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 0.5rem; width: 180px; flex-direction: column; gap: 0.5rem;">
+            <!-- REPLACE THE LINK BELOW WITH YOUR ACTUAL GOOGLE SHEET URL -->
+            <button onclick="window.open('YOUR_GOOGLE_SHEET_URL_HERE', '_blank')" style="background: transparent; border: none; color: #3b82f6; text-align: left; cursor: pointer; padding: 0.5rem; font-weight: 600;">📝 Open Sheet</button>
+            <button onclick="showAddQuestionForm()" style="background: transparent; border: none; color: #10b981; text-align: left; cursor: pointer; padding: 0.5rem; font-weight: 600;">➕ Add Question</button>
+        </div>
+    </div>
 </body>
 </html>
