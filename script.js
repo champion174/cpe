@@ -737,3 +737,71 @@ function checkCrossword() {
         }
     }
 }
+
+// --- ADMIN BACKDOOR ---
+
+// Make the lock clickable
+document.getElementById('admin-lock').onclick = function(e) {
+    if (e.target.id === 'admin-lock') {
+        const menu = document.getElementById('admin-menu');
+        menu.style.display = menu.style.display === 'none' || menu.style.display === '' ? 'flex' : 'none';
+    }
+};
+
+function showAddQuestionForm() {
+    document.getElementById('admin-menu').style.display = 'none';
+    showView('add-question-view');
+}
+
+async function submitNewQuestion(event) {
+    event.preventDefault(); // Stops the page from refreshing
+    
+    const btn = document.getElementById('submit-q-btn');
+    btn.innerText = 'Uploading...';
+    btn.disabled = true;
+
+    // Create the payload matching your Google Sheet column headers exactly
+    const payload = {
+        action: "addQuestion",
+        data: {
+            Question_ID: document.getElementById('add-qid').value,
+            Category: document.getElementById('add-category').value,
+            Chapter: document.getElementById('add-chapter').value,
+            Difficulty_Rating: document.getElementById('add-rating').value,
+            Question_Type: document.getElementById('add-type').value,
+            Question_Text: document.getElementById('add-qtext').value,
+            Image_URL: document.getElementById('add-image').value,
+            Option_A: document.getElementById('add-opta').value,
+            Option_B: document.getElementById('add-optb').value,
+            Option_C: document.getElementById('add-optc').value,
+            Option_D: document.getElementById('add-optd').value,
+            Correct_Answer: document.getElementById('add-correct').value,
+            Explanation: document.getElementById('add-exp').value,
+            Exam: document.getElementById('add-exam').value,
+            Part: document.getElementById('add-part').value
+        }
+    };
+
+    try {
+        // Send a POST request to your existing API URL
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        
+        let result = await response.json();
+        
+        if (result.status === "success") {
+            alert('Success! Question added to database.');
+            document.getElementById('add-question-form').reset(); // Clear the form
+        } else {
+            alert('Backend error: ' + result.error);
+        }
+    } catch (err) {
+        alert('Failed to connect to the server.');
+        console.error(err);
+    }
+    
+    btn.innerText = 'Upload to Database';
+    btn.disabled = false;
+}
