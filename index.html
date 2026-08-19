@@ -292,13 +292,8 @@
     </main>
     <script src="script.js"></script>
     <!-- HIDDEN ADMIN LOCK -->
-    <div id="admin-lock" style="position: fixed; bottom: 15px; right: 15px; opacity: 0.1; cursor: pointer; font-size: 1.5rem; z-index: 9999; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.1'">
+    <div id="admin-lock" style="position: fixed; bottom: 15px; right: 15px; opacity: 0.1; cursor: pointer; font-size: 1.5rem; z-index: 9999; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.1'" onclick="promptAdmin()">
         🔒
-        <div id="admin-menu" style="display: none; position: absolute; bottom: 35px; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 0.5rem; width: 180px; flex-direction: column; gap: 0.5rem;">
-            <!-- REPLACE THE LINK BELOW WITH YOUR ACTUAL GOOGLE SHEET URL -->
-            <button onclick="window.open('YOUR_GOOGLE_SHEET_URL_HERE', '_blank')" style="background: transparent; border: none; color: #3b82f6; text-align: left; cursor: pointer; padding: 0.5rem; font-weight: 600;">📝 Open Sheet</button>
-            <button onclick="showAddQuestionForm()" style="background: transparent; border: none; color: #10b981; text-align: left; cursor: pointer; padding: 0.5rem; font-weight: 600;">➕ Add Question</button>
-        </div>
     </div>
 </body>
 </html>
